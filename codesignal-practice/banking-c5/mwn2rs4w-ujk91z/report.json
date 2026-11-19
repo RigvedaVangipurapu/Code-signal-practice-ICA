@@ -1,0 +1,320 @@
+{
+  "score": 500,
+  "totalWeight": 800,
+  "levelScores": [
+    {
+      "level": 1,
+      "points": 100,
+      "weight": 100,
+      "passed": true
+    },
+    {
+      "level": 2,
+      "points": 150,
+      "weight": 150,
+      "passed": true
+    },
+    {
+      "level": 3,
+      "points": 250,
+      "weight": 250,
+      "passed": true
+    },
+    {
+      "level": 4,
+      "points": 0,
+      "weight": 300,
+      "passed": false
+    }
+  ],
+  "timePerLevel": [
+    {
+      "level": 1,
+      "ms": 563347,
+      "budgetMs": 600000,
+      "passed": true,
+      "reached": true
+    },
+    {
+      "level": 2,
+      "ms": 1800468,
+      "budgetMs": 1200000,
+      "passed": true,
+      "reached": true
+    },
+    {
+      "level": 3,
+      "ms": 1074585,
+      "budgetMs": 1500000,
+      "passed": true,
+      "reached": true
+    },
+    {
+      "level": 4,
+      "ms": 1961612,
+      "budgetMs": 2100000,
+      "passed": false,
+      "reached": true
+    }
+  ],
+  "timeline": {
+    "durationMs": 5400012,
+    "markers": [
+      {
+        "at": 1795064585667,
+        "offsetMs": 563347,
+        "level": 1,
+        "passRate": 1,
+        "passed": true,
+        "failureClass": null
+      },
+      {
+        "at": 1795065725761,
+        "offsetMs": 1703441,
+        "level": 2,
+        "passRate": 0.35714285714285715,
+        "passed": false,
+        "failureClass": "regression"
+      },
+      {
+        "at": 1795065735193,
+        "offsetMs": 1712873,
+        "level": 2,
+        "passRate": 0.35714285714285715,
+        "passed": false,
+        "failureClass": "regression"
+      },
+      {
+        "at": 1795065798534,
+        "offsetMs": 1776214,
+        "level": 2,
+        "passRate": 0.8571428571428571,
+        "passed": false,
+        "failureClass": "edge-case"
+      },
+      {
+        "at": 1795065860296,
+        "offsetMs": 1837976,
+        "level": 2,
+        "passRate": 0.9285714285714286,
+        "passed": false,
+        "failureClass": "edge-case"
+      },
+      {
+        "at": 1795066036295,
+        "offsetMs": 2013975,
+        "level": 2,
+        "passRate": 0.9285714285714286,
+        "passed": false,
+        "failureClass": "edge-case"
+      },
+      {
+        "at": 1795066163784,
+        "offsetMs": 2141464,
+        "level": 2,
+        "passRate": 0.9285714285714286,
+        "passed": false,
+        "failureClass": "edge-case"
+      },
+      {
+        "at": 1795066386135,
+        "offsetMs": 2363815,
+        "level": 2,
+        "passRate": 1,
+        "passed": true,
+        "failureClass": null
+      },
+      {
+        "at": 1795067300222,
+        "offsetMs": 3277902,
+        "level": 3,
+        "passRate": 0.9523809523809523,
+        "passed": false,
+        "failureClass": "edge-case"
+      },
+      {
+        "at": 1795067460720,
+        "offsetMs": 3438400,
+        "level": 3,
+        "passRate": 1,
+        "passed": true,
+        "failureClass": null
+      },
+      {
+        "at": 1795068304186,
+        "offsetMs": 4281866,
+        "level": 4,
+        "passRate": 0.75,
+        "passed": false,
+        "failureClass": "wrong-logic"
+      }
+    ],
+    "longestGapMs": 1140094,
+    "longestGapAfter": 1795064585667
+  },
+  "refactor": {
+    "available": true,
+    "baseLines": 43,
+    "changedLines": 7,
+    "finalLines": 98
+  },
+  "sessionFailures": {
+    "counts": {
+      "regression": 2,
+      "timeout": 0,
+      "crash": 0,
+      "edge-case": 5,
+      "wrong-type": 0,
+      "length": 0,
+      "wrong-logic": 1
+    },
+    "total": 8
+  },
+  "allFailures": {
+    "counts": {
+      "regression": 2,
+      "timeout": 0,
+      "crash": 0,
+      "edge-case": 5,
+      "wrong-type": 0,
+      "length": 0,
+      "wrong-logic": 1
+    },
+    "total": 8
+  },
+  "sessionProbes": [
+    {
+      "probe": "rank-n-zero",
+      "failed": 6,
+      "sessions": 1
+    },
+    {
+      "probe": "rank-tiebreak-equal-totals",
+      "failed": 3,
+      "sessions": 1
+    },
+    {
+      "probe": "create-duplicate",
+      "failed": 2,
+      "sessions": 1
+    },
+    {
+      "probe": "delete-absent",
+      "failed": 2,
+      "sessions": 1
+    },
+    {
+      "probe": "delete-then-recreate",
+      "failed": 2,
+      "sessions": 1
+    },
+    {
+      "probe": "has-absent",
+      "failed": 2,
+      "sessions": 1
+    },
+    {
+      "probe": "has-after-delete",
+      "failed": 2,
+      "sessions": 1
+    },
+    {
+      "probe": "rate-boundary-exactly-window",
+      "failed": 1,
+      "sessions": 1
+    },
+    {
+      "probe": "rate-exceeds-limit",
+      "failed": 1,
+      "sessions": 1
+    },
+    {
+      "probe": "rate-independent-keys",
+      "failed": 1,
+      "sessions": 1
+    },
+    {
+      "probe": "rate-window-slides",
+      "failed": 1,
+      "sessions": 1
+    },
+    {
+      "probe": "rate-within-limit",
+      "failed": 1,
+      "sessions": 1
+    },
+    {
+      "probe": "transfer-into-self",
+      "failed": 1,
+      "sessions": 1
+    }
+  ],
+  "allProbes": [
+    {
+      "probe": "rank-n-zero",
+      "failed": 6,
+      "sessions": 1
+    },
+    {
+      "probe": "rank-tiebreak-equal-totals",
+      "failed": 3,
+      "sessions": 1
+    },
+    {
+      "probe": "create-duplicate",
+      "failed": 2,
+      "sessions": 1
+    },
+    {
+      "probe": "delete-absent",
+      "failed": 2,
+      "sessions": 1
+    },
+    {
+      "probe": "delete-then-recreate",
+      "failed": 2,
+      "sessions": 1
+    },
+    {
+      "probe": "has-absent",
+      "failed": 2,
+      "sessions": 1
+    },
+    {
+      "probe": "has-after-delete",
+      "failed": 2,
+      "sessions": 1
+    },
+    {
+      "probe": "rate-boundary-exactly-window",
+      "failed": 1,
+      "sessions": 1
+    },
+    {
+      "probe": "rate-exceeds-limit",
+      "failed": 1,
+      "sessions": 1
+    },
+    {
+      "probe": "rate-independent-keys",
+      "failed": 1,
+      "sessions": 1
+    },
+    {
+      "probe": "rate-window-slides",
+      "failed": 1,
+      "sessions": 1
+    },
+    {
+      "probe": "rate-within-limit",
+      "failed": 1,
+      "sessions": 1
+    },
+    {
+      "probe": "transfer-into-self",
+      "failed": 1,
+      "sessions": 1
+    }
+  ],
+  "attemptCount": 3
+}

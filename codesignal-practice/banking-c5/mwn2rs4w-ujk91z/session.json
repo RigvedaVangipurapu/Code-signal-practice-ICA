@@ -1,0 +1,4403 @@
+{
+  "id": "mwn2rs4w-ujk91z",
+  "taskId": "banking-c5",
+  "status": "ended",
+  "startedAt": 1795064022320,
+  "timeLimitMs": 5400000,
+  "code": "from collections import defaultdict\n\nclass Ledger:\n    def __init__(self):\n        self.registry = []\n        self.registry_lookup = set()\n        self.record = dict()\n        self.createamt = dict()\n\n        self.time = defaultdict(list)\n        self.maxtime = 0\n\n    def process(self, query):\n        operation, *args = query\n\n        if operation == 'CREATE':\n            value = args[0]\n            amount = args[1] if len(args) > 1 else '-1'\n\n            # deal with timestamps for non AT functions before getting into it\n            self.maxtime += 1\n            timestamps = self.time[value]\n\n            if len(timestamps) < 3:\n                timestamps.append(self.maxtime)\n\n            else:\n                numactions = 0\n                for time in timestamps[::-1]:\n                    if self.maxtime - time < 10:\n                        numactions += 1\n\n                if numactions > 3:\n                    self.maxtime -= 1\n                    return \"false\"\n                self.time.append(self.maxtime)\n\n\n            if value in self.registry_lookup:\n                return \"false\"\n            self.registry.append(value)\n            self.registry_lookup = set(self.registry)\n            self.record[value] = 0\n            if int(amount) > 0:\n                self.createamt[value] = int(amount)\n            return \"true\"\n\n        if operation == 'GET':\n            value = args[0]\n\n            for i in range(len(self.registry)):\n                if self.registry[i] == value:\n                    if value in self.createamt:\n                        return str(self.createamt[value])\n                    return str(i)\n            return \"\"\n\n        if operation == 'DELETE':\n            value = args[0]\n\n\n            # deal with timestamps for non AT functions before getting into it\n            self.maxtime += 1\n            timestamps = self.time[value]\n\n            if len(timestamps) < 3:\n                timestamps.append(self.maxtime)\n\n            else:\n                numactions = 0\n                for time in timestamps[::-1]:\n                    if self.maxtime - time < 10:\n                        numactions += 1\n\n                if numactions > 3:\n                    self.maxtime -= 1\n                    return \"false\"\n                self.time.append(self.maxtime)\n\n\n            if value in self.registry_lookup:\n                self.registry.remove(value)\n                self.registry_lookup = set(self.registry)\n                self.record.pop(value, None)\n                self.createamt.pop(value, None)\n                return \"true\"\n            else:\n                return \"false\"\n\n        if operation == 'RECORD':\n            value, amount = args\n\n            # deal with timestamps for non AT functions before getting into it\n            self.maxtime += 1\n            timestamps = self.time[value]\n\n            if len(timestamps) < 3:\n                timestamps.append(self.maxtime)\n\n            else:\n                numactions = 0\n                for time in timestamps[::-1]:\n                    if self.maxtime - time < 10:\n                        numactions += 1\n\n                if numactions > 3:\n                    self.maxtime -= 1\n                    return \"false\"\n                self.time.append(self.maxtime)\n\n            if value in self.record:\n                self.record[value] += int(amount)\n                return str(self.record[value])\n            return \"\"\n\n        if operation == 'TOP':\n            value = args[0]\n\n            temp = dict(sorted(self.record.items(), key=lambda kv: (-kv[1], kv)))\n            res = ''\n            counter = 0\n            for k, v in temp.items():\n                if v != 0 and counter < int(value):\n                    res = res + k + '(' + str(v) + ')'\n                    res += ', '\n                    counter += 1\n            return res[:len(res) - 2] if len(res) > 0 else \"\"\n\n        if operation == 'TRANSFER':\n            from_user, to_user, transferamt = args\n            dollars = int(transferamt)\n\n            if from_user == to_user:\n                return \"false\"\n            if from_user not in self.registry_lookup:\n                return \"false\"\n\n            if to_user not in self.registry_lookup:\n                return \"false\"\n\n            if from_user in self.createamt and self.createamt[from_user] >= dollars:\n                if to_user in self.createamt:\n                    self.createamt[to_user] += dollars\n                else:\n                    self.createamt[to_user] = dollars\n                self.createamt[from_user] = int(self.createamt[from_user]) - dollars\n                return \"true\"\n\n            return \"false\"\n\n\n        if operation == 'ACTION':\n\n            if len(self.time[value] ) < 3:\n                self.time[value].append(time)\n                self.maxtime = max(self.maxtime + 1 , time)\n                return \"true\"\n\n            return \"false\"\n\n        else:\n            return \"false\"\n\n\ndef solution(queries):\n    ledger = Ledger()\n    results = []\n    for query in queries:\n        results.append(ledger.process(query))\n    return results",
+  "currentLevel": 4,
+  "unlockedLevel": 4,
+  "levelTimes": {
+    "1": {
+      "unlockedAt": 1795064022320,
+      "passedAt": 1795064585667
+    },
+    "2": {
+      "unlockedAt": 1795064585667,
+      "passedAt": 1795066386135
+    },
+    "3": {
+      "unlockedAt": 1795066386135,
+      "passedAt": 1795067460720
+    },
+    "4": {
+      "unlockedAt": 1795067460720
+    }
+  },
+  "bestPerLevel": {
+    "1": {
+      "passed": 7,
+      "total": 7
+    },
+    "2": {
+      "passed": 7,
+      "total": 7
+    },
+    "3": {
+      "passed": 7,
+      "total": 7
+    },
+    "4": {
+      "passed": 0,
+      "total": 7
+    }
+  },
+  "submits": [
+    {
+      "id": "mwn33utf-fcp1uy",
+      "at": 1795064585667,
+      "level": 1,
+      "results": [
+        {
+          "testId": "l1-v1",
+          "status": "pass",
+          "actual": [
+            "true",
+            "0",
+            "false",
+            "true",
+            ""
+          ],
+          "expected": [
+            "true",
+            "0",
+            "false",
+            "true",
+            ""
+          ],
+          "failureReason": null,
+          "consoleOutput": "",
+          "errorText": null,
+          "durationMs": 0.8000000000265572
+        },
+        {
+          "testId": "l1-v2",
+          "status": "pass",
+          "actual": [
+            "true",
+            "false",
+            "0",
+            "true",
+            "",
+            "false"
+          ],
+          "expected": [
+            "true",
+            "false",
+            "0",
+            "true",
+            "",
+            "false"
+          ],
+          "failureReason": null,
+          "consoleOutput": "",
+          "errorText": null,
+          "durationMs": 1.099999999951251
+        },
+        {
+          "testId": "l1-h1",
+          "status": "pass",
+          "actual": [
+            "true",
+            "false"
+          ],
+          "expected": [
+            "true",
+            "false"
+          ],
+          "failureReason": null,
+          "consoleOutput": "",
+          "errorText": null,
+          "durationMs": 0.5999999998493877
+        },
+        {
+          "testId": "l1-h2",
+          "status": "pass",
+          "actual": [
+            ""
+          ],
+          "expected": [
+            ""
+          ],
+          "failureReason": null,
+          "consoleOutput": "",
+          "errorText": null,
+          "durationMs": 0.49999999987448973
+        },
+        {
+          "testId": "l1-h3",
+          "status": "pass",
+          "actual": [
+            "false"
+          ],
+          "expected": [
+            "false"
+          ],
+          "failureReason": null,
+          "consoleOutput": "",
+          "errorText": null,
+          "durationMs": 0.49999999987448973
+        },
+        {
+          "testId": "l1-h4",
+          "status": "pass",
+          "actual": [
+            "true",
+            "true",
+            "true"
+          ],
+          "expected": [
+            "true",
+            "true",
+            "true"
+          ],
+          "failureReason": null,
+          "consoleOutput": "",
+          "errorText": null,
+          "durationMs": 0.29999999992469384
+        },
+        {
+          "testId": "l1-h5",
+          "status": "pass",
+          "actual": [
+            "true",
+            "true",
+            ""
+          ],
+          "expected": [
+            "true",
+            "true",
+            ""
+          ],
+          "failureReason": null,
+          "consoleOutput": "",
+          "errorText": null,
+          "durationMs": 0.1999999999497959
+        }
+      ],
+      "tests": [
+        {
+          "id": "l1-v1",
+          "level": 1,
+          "hidden": false
+        },
+        {
+          "id": "l1-v2",
+          "level": 1,
+          "hidden": false
+        },
+        {
+          "id": "l1-h1",
+          "level": 1,
+          "hidden": true,
+          "probes": "create-duplicate"
+        },
+        {
+          "id": "l1-h2",
+          "level": 1,
+          "hidden": true,
+          "probes": "has-absent"
+        },
+        {
+          "id": "l1-h3",
+          "level": 1,
+          "hidden": true,
+          "probes": "delete-absent"
+        },
+        {
+          "id": "l1-h4",
+          "level": 1,
+          "hidden": true,
+          "probes": "delete-then-recreate"
+        },
+        {
+          "id": "l1-h5",
+          "level": 1,
+          "hidden": true,
+          "probes": "has-after-delete"
+        }
+      ],
+      "passed": true,
+      "brokenLevels": [],
+      "scoreAfter": 100,
+      "codeSnapshot": "class Ledger:\n    def __init__(self):\n        self.registry = []\n        self.registry_lookup = set()\n\n    def process(self, query):\n        operation, value = query\n\n        if operation == 'CREATE':\n            if value in self.registry_lookup:\n                return \"false\"\n            self.registry.append(value)\n            self.registry_lookup = set(self.registry)\n            return \"true\"\n        \n        if operation == 'GET':\n            for i in range(len(self.registry)):\n                if self.registry[i] == value:\n                    return str(i)\n            return \"\"\n\n        if operation == 'DELETE':\n            if value in self.registry_lookup:\n                self.registry.remove(value)\n                self.registry_lookup = set(self.registry)\n                return \"true\"\n            else:\n                return \"false\"\n\n        else:\n            return \"false\"\n\n\ndef solution(queries):\n    ledger = Ledger()\n    results = []\n    for query in queries:\n        results.append( ledger.process(query))\n    return results\n\n\n\n"
+    },
+    {
+      "id": "mwn3saip-h9po2b",
+      "at": 1795065725761,
+      "level": 2,
+      "results": [
+        {
+          "testId": "l1-v1",
+          "status": "error",
+          "actual": null,
+          "expected": [
+            "true",
+            "0",
+            "false",
+            "true",
+            ""
+          ],
+          "failureReason": null,
+          "consoleOutput": "",
+          "errorText": "Traceback (most recent call last):\n  File \"solution.py\", line 61, in solution\n    results.append( ledger.process(query))\n                    ~~~~~~~~~~~~~~^^^^^^^\n  File \"solution.py\", line 8, in process\n    operation, value , amount = query\n    ^^^^^^^^^^^^^^^^^^^^^^^^^\nValueError: not enough values to unpack (expected 3, got 2)\n",
+          "durationMs": 1.9999999999527063
+        },
+        {
+          "testId": "l1-v2",
+          "status": "error",
+          "actual": null,
+          "expected": [
+            "true",
+            "false",
+            "0",
+            "true",
+            "",
+            "false"
+          ],
+          "failureReason": null,
+          "consoleOutput": "",
+          "errorText": "Traceback (most recent call last):\n  File \"solution.py\", line 61, in solution\n    results.append( ledger.process(query))\n                    ~~~~~~~~~~~~~~^^^^^^^\n  File \"solution.py\", line 8, in process\n    operation, value , amount = query\n    ^^^^^^^^^^^^^^^^^^^^^^^^^\nValueError: not enough values to unpack (expected 3, got 2)\n",
+          "durationMs": 1.7000000002553861
+        },
+        {
+          "testId": "l1-h1",
+          "status": "error",
+          "actual": null,
+          "expected": [
+            "true",
+            "false"
+          ],
+          "failureReason": null,
+          "consoleOutput": "",
+          "errorText": "Traceback (most recent call last):\n  File \"solution.py\", line 61, in solution\n    results.append( ledger.process(query))\n                    ~~~~~~~~~~~~~~^^^^^^^\n  File \"solution.py\", line 8, in process\n    operation, value , amount = query\n    ^^^^^^^^^^^^^^^^^^^^^^^^^\nValueError: not enough values to unpack (expected 3, got 2)\n",
+          "durationMs": 1.099999999951251
+        },
+        {
+          "testId": "l1-h2",
+          "status": "error",
+          "actual": null,
+          "expected": [
+            ""
+          ],
+          "failureReason": null,
+          "consoleOutput": "",
+          "errorText": "Traceback (most recent call last):\n  File \"solution.py\", line 61, in solution\n    results.append( ledger.process(query))\n                    ~~~~~~~~~~~~~~^^^^^^^\n  File \"solution.py\", line 8, in process\n    operation, value , amount = query\n    ^^^^^^^^^^^^^^^^^^^^^^^^^\nValueError: not enough values to unpack (expected 3, got 2)\n",
+          "durationMs": 0.7999999997991836
+        },
+        {
+          "testId": "l1-h3",
+          "status": "error",
+          "actual": null,
+          "expected": [
+            "false"
+          ],
+          "failureReason": null,
+          "consoleOutput": "",
+          "errorText": "Traceback (most recent call last):\n  File \"solution.py\", line 61, in solution\n    results.append( ledger.process(query))\n                    ~~~~~~~~~~~~~~^^^^^^^\n  File \"solution.py\", line 8, in process\n    operation, value , amount = query\n    ^^^^^^^^^^^^^^^^^^^^^^^^^\nValueError: not enough values to unpack (expected 3, got 2)\n",
+          "durationMs": 0.7000000000516593
+        },
+        {
+          "testId": "l1-h4",
+          "status": "error",
+          "actual": null,
+          "expected": [
+            "true",
+            "true",
+            "true"
+          ],
+          "failureReason": null,
+          "consoleOutput": "",
+          "errorText": "Traceback (most recent call last):\n  File \"solution.py\", line 61, in solution\n    results.append( ledger.process(query))\n                    ~~~~~~~~~~~~~~^^^^^^^\n  File \"solution.py\", line 8, in process\n    operation, value , amount = query\n    ^^^^^^^^^^^^^^^^^^^^^^^^^\nValueError: not enough values to unpack (expected 3, got 2)\n",
+          "durationMs": 0.7999999997991836
+        },
+        {
+          "testId": "l1-h5",
+          "status": "error",
+          "actual": null,
+          "expected": [
+            "true",
+            "true",
+            ""
+          ],
+          "failureReason": null,
+          "consoleOutput": "",
+          "errorText": "Traceback (most recent call last):\n  File \"solution.py\", line 61, in solution\n    results.append( ledger.process(query))\n                    ~~~~~~~~~~~~~~^^^^^^^\n  File \"solution.py\", line 8, in process\n    operation, value , amount = query\n    ^^^^^^^^^^^^^^^^^^^^^^^^^\nValueError: not enough values to unpack (expected 3, got 2)\n",
+          "durationMs": 1.0000000002037268
+        },
+        {
+          "testId": "l2-v1",
+          "status": "pass",
+          "actual": [
+            "true",
+            "3",
+            "7",
+            "alice(7)"
+          ],
+          "expected": [
+            "true",
+            "3",
+            "7",
+            "alice(7)"
+          ],
+          "failureReason": null,
+          "consoleOutput": "",
+          "errorText": null,
+          "durationMs": 0.8000000002539309
+        },
+        {
+          "testId": "l2-v2",
+          "status": "pass",
+          "actual": [
+            "true",
+            "true",
+            "3",
+            "6",
+            "10",
+            "bob(10), alice(3)"
+          ],
+          "expected": [
+            "true",
+            "true",
+            "3",
+            "6",
+            "10",
+            "bob(10), alice(3)"
+          ],
+          "failureReason": null,
+          "consoleOutput": "",
+          "errorText": null,
+          "durationMs": 0.600000000304135
+        },
+        {
+          "testId": "l2-h1",
+          "status": "pass",
+          "actual": [
+            ""
+          ],
+          "expected": [
+            ""
+          ],
+          "failureReason": null,
+          "consoleOutput": "",
+          "errorText": null,
+          "durationMs": 0.7000000000516593
+        },
+        {
+          "testId": "l2-h2",
+          "status": "pass",
+          "actual": [
+            ""
+          ],
+          "expected": [
+            ""
+          ],
+          "failureReason": null,
+          "consoleOutput": "",
+          "errorText": null,
+          "durationMs": 0.9000000000014552
+        },
+        {
+          "testId": "l2-h3",
+          "status": "pass",
+          "actual": [
+            "true",
+            "2",
+            "alice(2)"
+          ],
+          "expected": [
+            "true",
+            "2",
+            "alice(2)"
+          ],
+          "failureReason": null,
+          "consoleOutput": "",
+          "errorText": null,
+          "durationMs": 0.8000000002539309
+        },
+        {
+          "testId": "l2-h4",
+          "status": "fail",
+          "actual": [
+            "true",
+            "true",
+            "3",
+            "3",
+            "bob(3), alice(3)"
+          ],
+          "expected": [
+            "true",
+            "true",
+            "3",
+            "3",
+            "alice(3), bob(3)"
+          ],
+          "failureReason": {
+            "kind": "value",
+            "index": 4
+          },
+          "consoleOutput": "",
+          "errorText": null,
+          "durationMs": 0.5000000001018634
+        },
+        {
+          "testId": "l2-h5",
+          "status": "fail",
+          "actual": [
+            "true",
+            "2",
+            "alice(2)"
+          ],
+          "expected": [
+            "true",
+            "2",
+            ""
+          ],
+          "failureReason": {
+            "kind": "value",
+            "index": 2
+          },
+          "consoleOutput": "",
+          "errorText": null,
+          "durationMs": 0.7000000000516593
+        }
+      ],
+      "tests": [
+        {
+          "id": "l1-v1",
+          "level": 1,
+          "hidden": false
+        },
+        {
+          "id": "l1-v2",
+          "level": 1,
+          "hidden": false
+        },
+        {
+          "id": "l1-h1",
+          "level": 1,
+          "hidden": true,
+          "probes": "create-duplicate"
+        },
+        {
+          "id": "l1-h2",
+          "level": 1,
+          "hidden": true,
+          "probes": "has-absent"
+        },
+        {
+          "id": "l1-h3",
+          "level": 1,
+          "hidden": true,
+          "probes": "delete-absent"
+        },
+        {
+          "id": "l1-h4",
+          "level": 1,
+          "hidden": true,
+          "probes": "delete-then-recreate"
+        },
+        {
+          "id": "l1-h5",
+          "level": 1,
+          "hidden": true,
+          "probes": "has-after-delete"
+        },
+        {
+          "id": "l2-v1",
+          "level": 2,
+          "hidden": false
+        },
+        {
+          "id": "l2-v2",
+          "level": 2,
+          "hidden": false
+        },
+        {
+          "id": "l2-h1",
+          "level": 2,
+          "hidden": true,
+          "probes": "record-absent"
+        },
+        {
+          "id": "l2-h2",
+          "level": 2,
+          "hidden": true,
+          "probes": "rank-empty"
+        },
+        {
+          "id": "l2-h3",
+          "level": 2,
+          "hidden": true,
+          "probes": "rank-fewer-than-n"
+        },
+        {
+          "id": "l2-h4",
+          "level": 2,
+          "hidden": true,
+          "probes": "rank-tiebreak-equal-totals"
+        },
+        {
+          "id": "l2-h5",
+          "level": 2,
+          "hidden": true,
+          "probes": "rank-n-zero"
+        }
+      ],
+      "passed": false,
+      "brokenLevels": [
+        1
+      ],
+      "scoreAfter": 100,
+      "codeSnapshot": "class Ledger:\n    def __init__(self):\n        self.registry = []\n        self.registry_lookup = set()\n        self.record = dict()\n\n    def process(self, query):\n        operation, value , amount = query\n\n        if operation == 'CREATE':\n            if value in self.registry_lookup:\n                return \"false\"\n            self.registry.append(value)\n            self.registry_lookup = set(self.registry)\n            self.record[value] = 0\n            return \"true\"\n        \n        if operation == 'GET':\n            for i in range(len(self.registry)):\n                if self.registry[i] == value:\n                    return str(i)\n            return \"\"\n\n        if operation == 'DELETE':\n            if value in self.registry_lookup:\n                self.registry.remove(value)\n                self.registry_lookup = set(self.registry)\n                self.record.pop(value, None)\n                return \"true\"\n            else:\n                return \"false\"\n\n        if operation == 'RECORD':\n            if value in self.record: \n                self.record[value] += int(amount)\n                return str(self.record[value])\n            \n            return \"\"\n\n        if operation == 'TOP':\n            temp = dict(sorted(self.record.items() , key = lambda kv : -kv[1]))\n            res = ''\n            for k,v  in temp.items():\n                res = res + k + '('+ str(v) + ')' \n                res += ', '\n            return res[:len(res)-2]\n\n\n            \n\n        else:\n            return \"false\"\n\n\ndef solution(queries):\n    ledger = Ledger()\n    results = []\n    for query in queries:\n        if query[0] == 'TOP':\n            query.append(-1)\n        results.append( ledger.process(query))\n    return results\n\n\n\n"
+    },
+    {
+      "id": "mwn3shsp-9vsd5t",
+      "at": 1795065735193,
+      "level": 2,
+      "results": [
+        {
+          "testId": "l1-v1",
+          "status": "error",
+          "actual": null,
+          "expected": [
+            "true",
+            "0",
+            "false",
+            "true",
+            ""
+          ],
+          "failureReason": null,
+          "consoleOutput": "",
+          "errorText": "Traceback (most recent call last):\n  File \"solution.py\", line 61, in solution\n    results.append( ledger.process(query))\n                    ~~~~~~~~~~~~~~^^^^^^^\n  File \"solution.py\", line 8, in process\n    operation, value , amount = query\n    ^^^^^^^^^^^^^^^^^^^^^^^^^\nValueError: not enough values to unpack (expected 3, got 2)\n",
+          "durationMs": 1.8000000000029104
+        },
+        {
+          "testId": "l1-v2",
+          "status": "error",
+          "actual": null,
+          "expected": [
+            "true",
+            "false",
+            "0",
+            "true",
+            "",
+            "false"
+          ],
+          "failureReason": null,
+          "consoleOutput": "",
+          "errorText": "Traceback (most recent call last):\n  File \"solution.py\", line 61, in solution\n    results.append( ledger.process(query))\n                    ~~~~~~~~~~~~~~^^^^^^^\n  File \"solution.py\", line 8, in process\n    operation, value , amount = query\n    ^^^^^^^^^^^^^^^^^^^^^^^^^\nValueError: not enough values to unpack (expected 3, got 2)\n",
+          "durationMs": 1.4000000001033186
+        },
+        {
+          "testId": "l1-h1",
+          "status": "error",
+          "actual": null,
+          "expected": [
+            "true",
+            "false"
+          ],
+          "failureReason": null,
+          "consoleOutput": "",
+          "errorText": "Traceback (most recent call last):\n  File \"solution.py\", line 61, in solution\n    results.append( ledger.process(query))\n                    ~~~~~~~~~~~~~~^^^^^^^\n  File \"solution.py\", line 8, in process\n    operation, value , amount = query\n    ^^^^^^^^^^^^^^^^^^^^^^^^^\nValueError: not enough values to unpack (expected 3, got 2)\n",
+          "durationMs": 1.0000000002037268
+        },
+        {
+          "testId": "l1-h2",
+          "status": "error",
+          "actual": null,
+          "expected": [
+            ""
+          ],
+          "failureReason": null,
+          "consoleOutput": "",
+          "errorText": "Traceback (most recent call last):\n  File \"solution.py\", line 61, in solution\n    results.append( ledger.process(query))\n                    ~~~~~~~~~~~~~~^^^^^^^\n  File \"solution.py\", line 8, in process\n    operation, value , amount = query\n    ^^^^^^^^^^^^^^^^^^^^^^^^^\nValueError: not enough values to unpack (expected 3, got 2)\n",
+          "durationMs": 1.099999999951251
+        },
+        {
+          "testId": "l1-h3",
+          "status": "error",
+          "actual": null,
+          "expected": [
+            "false"
+          ],
+          "failureReason": null,
+          "consoleOutput": "",
+          "errorText": "Traceback (most recent call last):\n  File \"solution.py\", line 61, in solution\n    results.append( ledger.process(query))\n                    ~~~~~~~~~~~~~~^^^^^^^\n  File \"solution.py\", line 8, in process\n    operation, value , amount = query\n    ^^^^^^^^^^^^^^^^^^^^^^^^^\nValueError: not enough values to unpack (expected 3, got 2)\n",
+          "durationMs": 1.0000000002037268
+        },
+        {
+          "testId": "l1-h4",
+          "status": "error",
+          "actual": null,
+          "expected": [
+            "true",
+            "true",
+            "true"
+          ],
+          "failureReason": null,
+          "consoleOutput": "",
+          "errorText": "Traceback (most recent call last):\n  File \"solution.py\", line 61, in solution\n    results.append( ledger.process(query))\n                    ~~~~~~~~~~~~~~^^^^^^^\n  File \"solution.py\", line 8, in process\n    operation, value , amount = query\n    ^^^^^^^^^^^^^^^^^^^^^^^^^\nValueError: not enough values to unpack (expected 3, got 2)\n",
+          "durationMs": 0.9000000000014552
+        },
+        {
+          "testId": "l1-h5",
+          "status": "error",
+          "actual": null,
+          "expected": [
+            "true",
+            "true",
+            ""
+          ],
+          "failureReason": null,
+          "consoleOutput": "",
+          "errorText": "Traceback (most recent call last):\n  File \"solution.py\", line 61, in solution\n    results.append( ledger.process(query))\n                    ~~~~~~~~~~~~~~^^^^^^^\n  File \"solution.py\", line 8, in process\n    operation, value , amount = query\n    ^^^^^^^^^^^^^^^^^^^^^^^^^\nValueError: not enough values to unpack (expected 3, got 2)\n",
+          "durationMs": 1.099999999951251
+        },
+        {
+          "testId": "l2-v1",
+          "status": "pass",
+          "actual": [
+            "true",
+            "3",
+            "7",
+            "alice(7)"
+          ],
+          "expected": [
+            "true",
+            "3",
+            "7",
+            "alice(7)"
+          ],
+          "failureReason": null,
+          "consoleOutput": "",
+          "errorText": null,
+          "durationMs": 0.7000000000516593
+        },
+        {
+          "testId": "l2-v2",
+          "status": "pass",
+          "actual": [
+            "true",
+            "true",
+            "3",
+            "6",
+            "10",
+            "bob(10), alice(3)"
+          ],
+          "expected": [
+            "true",
+            "true",
+            "3",
+            "6",
+            "10",
+            "bob(10), alice(3)"
+          ],
+          "failureReason": null,
+          "consoleOutput": "",
+          "errorText": null,
+          "durationMs": 0.5000000001018634
+        },
+        {
+          "testId": "l2-h1",
+          "status": "pass",
+          "actual": [
+            ""
+          ],
+          "expected": [
+            ""
+          ],
+          "failureReason": null,
+          "consoleOutput": "",
+          "errorText": null,
+          "durationMs": 0.3999999998995918
+        },
+        {
+          "testId": "l2-h2",
+          "status": "pass",
+          "actual": [
+            ""
+          ],
+          "expected": [
+            ""
+          ],
+          "failureReason": null,
+          "consoleOutput": "",
+          "errorText": null,
+          "durationMs": 0.7000000000516593
+        },
+        {
+          "testId": "l2-h3",
+          "status": "pass",
+          "actual": [
+            "true",
+            "2",
+            "alice(2)"
+          ],
+          "expected": [
+            "true",
+            "2",
+            "alice(2)"
+          ],
+          "failureReason": null,
+          "consoleOutput": "",
+          "errorText": null,
+          "durationMs": 0.7000000000516593
+        },
+        {
+          "testId": "l2-h4",
+          "status": "fail",
+          "actual": [
+            "true",
+            "true",
+            "3",
+            "3",
+            "bob(3), alice(3)"
+          ],
+          "expected": [
+            "true",
+            "true",
+            "3",
+            "3",
+            "alice(3), bob(3)"
+          ],
+          "failureReason": {
+            "kind": "value",
+            "index": 4
+          },
+          "consoleOutput": "",
+          "errorText": null,
+          "durationMs": 0.5000000001018634
+        },
+        {
+          "testId": "l2-h5",
+          "status": "fail",
+          "actual": [
+            "true",
+            "2",
+            "alice(2)"
+          ],
+          "expected": [
+            "true",
+            "2",
+            ""
+          ],
+          "failureReason": {
+            "kind": "value",
+            "index": 2
+          },
+          "consoleOutput": "",
+          "errorText": null,
+          "durationMs": 0.7000000000516593
+        }
+      ],
+      "tests": [
+        {
+          "id": "l1-v1",
+          "level": 1,
+          "hidden": false
+        },
+        {
+          "id": "l1-v2",
+          "level": 1,
+          "hidden": false
+        },
+        {
+          "id": "l1-h1",
+          "level": 1,
+          "hidden": true,
+          "probes": "create-duplicate"
+        },
+        {
+          "id": "l1-h2",
+          "level": 1,
+          "hidden": true,
+          "probes": "has-absent"
+        },
+        {
+          "id": "l1-h3",
+          "level": 1,
+          "hidden": true,
+          "probes": "delete-absent"
+        },
+        {
+          "id": "l1-h4",
+          "level": 1,
+          "hidden": true,
+          "probes": "delete-then-recreate"
+        },
+        {
+          "id": "l1-h5",
+          "level": 1,
+          "hidden": true,
+          "probes": "has-after-delete"
+        },
+        {
+          "id": "l2-v1",
+          "level": 2,
+          "hidden": false
+        },
+        {
+          "id": "l2-v2",
+          "level": 2,
+          "hidden": false
+        },
+        {
+          "id": "l2-h1",
+          "level": 2,
+          "hidden": true,
+          "probes": "record-absent"
+        },
+        {
+          "id": "l2-h2",
+          "level": 2,
+          "hidden": true,
+          "probes": "rank-empty"
+        },
+        {
+          "id": "l2-h3",
+          "level": 2,
+          "hidden": true,
+          "probes": "rank-fewer-than-n"
+        },
+        {
+          "id": "l2-h4",
+          "level": 2,
+          "hidden": true,
+          "probes": "rank-tiebreak-equal-totals"
+        },
+        {
+          "id": "l2-h5",
+          "level": 2,
+          "hidden": true,
+          "probes": "rank-n-zero"
+        }
+      ],
+      "passed": false,
+      "brokenLevels": [
+        1
+      ],
+      "scoreAfter": 100,
+      "codeSnapshot": "class Ledger:\n    def __init__(self):\n        self.registry = []\n        self.registry_lookup = set()\n        self.record = dict()\n\n    def process(self, query):\n        operation, value , amount = query\n\n        if operation == 'CREATE':\n            if value in self.registry_lookup:\n                return \"false\"\n            self.registry.append(value)\n            self.registry_lookup = set(self.registry)\n            self.record[value] = 0\n            return \"true\"\n        \n        if operation == 'GET':\n            for i in range(len(self.registry)):\n                if self.registry[i] == value:\n                    return str(i)\n            return \"\"\n\n        if operation == 'DELETE':\n            if value in self.registry_lookup:\n                self.registry.remove(value)\n                self.registry_lookup = set(self.registry)\n                self.record.pop(value, None)\n                return \"true\"\n            else:\n                return \"false\"\n\n        if operation == 'RECORD':\n            if value in self.record: \n                self.record[value] += int(amount)\n                return str(self.record[value])\n            \n            return \"\"\n\n        if operation == 'TOP':\n            temp = dict(sorted(self.record.items() , key = lambda kv : -kv[1]))\n            res = ''\n            for k,v  in temp.items():\n                res = res + k + '('+ str(v) + ')' \n                res += ', '\n            return res[:len(res)-2]\n\n\n            \n\n        else:\n            return \"false\"\n\n\ndef solution(queries):\n    ledger = Ledger()\n    results = []\n    for query in queries:\n        if query[0] == 'TOP':\n            query.append(-1)\n        results.append( ledger.process(query))\n    return results\n\n\n\n"
+    },
+    {
+      "id": "mwn3tuo6-d6lyd7",
+      "at": 1795065798534,
+      "level": 2,
+      "results": [
+        {
+          "testId": "l1-v1",
+          "status": "pass",
+          "actual": [
+            "true",
+            "0",
+            "false",
+            "true",
+            ""
+          ],
+          "expected": [
+            "true",
+            "0",
+            "false",
+            "true",
+            ""
+          ],
+          "failureReason": null,
+          "consoleOutput": "",
+          "errorText": null,
+          "durationMs": 1.2000000001535227
+        },
+        {
+          "testId": "l1-v2",
+          "status": "pass",
+          "actual": [
+            "true",
+            "false",
+            "0",
+            "true",
+            "",
+            "false"
+          ],
+          "expected": [
+            "true",
+            "false",
+            "0",
+            "true",
+            "",
+            "false"
+          ],
+          "failureReason": null,
+          "consoleOutput": "",
+          "errorText": null,
+          "durationMs": 0.9999999997489795
+        },
+        {
+          "testId": "l1-h1",
+          "status": "pass",
+          "actual": [
+            "true",
+            "false"
+          ],
+          "expected": [
+            "true",
+            "false"
+          ],
+          "failureReason": null,
+          "consoleOutput": "",
+          "errorText": null,
+          "durationMs": 0.7000000000516593
+        },
+        {
+          "testId": "l1-h2",
+          "status": "pass",
+          "actual": [
+            ""
+          ],
+          "expected": [
+            ""
+          ],
+          "failureReason": null,
+          "consoleOutput": "",
+          "errorText": null,
+          "durationMs": 0.5999999998493877
+        },
+        {
+          "testId": "l1-h3",
+          "status": "pass",
+          "actual": [
+            "false"
+          ],
+          "expected": [
+            "false"
+          ],
+          "failureReason": null,
+          "consoleOutput": "",
+          "errorText": null,
+          "durationMs": 0.5999999998493877
+        },
+        {
+          "testId": "l1-h4",
+          "status": "pass",
+          "actual": [
+            "true",
+            "true",
+            "true"
+          ],
+          "expected": [
+            "true",
+            "true",
+            "true"
+          ],
+          "failureReason": null,
+          "consoleOutput": "",
+          "errorText": null,
+          "durationMs": 0.7000000000516593
+        },
+        {
+          "testId": "l1-h5",
+          "status": "pass",
+          "actual": [
+            "true",
+            "true",
+            ""
+          ],
+          "expected": [
+            "true",
+            "true",
+            ""
+          ],
+          "failureReason": null,
+          "consoleOutput": "",
+          "errorText": null,
+          "durationMs": 0.5000000001018634
+        },
+        {
+          "testId": "l2-v1",
+          "status": "pass",
+          "actual": [
+            "true",
+            "3",
+            "7",
+            "alice(7)"
+          ],
+          "expected": [
+            "true",
+            "3",
+            "7",
+            "alice(7)"
+          ],
+          "failureReason": null,
+          "consoleOutput": "",
+          "errorText": null,
+          "durationMs": 0.7000000000516593
+        },
+        {
+          "testId": "l2-v2",
+          "status": "pass",
+          "actual": [
+            "true",
+            "true",
+            "3",
+            "6",
+            "10",
+            "bob(10), alice(3)"
+          ],
+          "expected": [
+            "true",
+            "true",
+            "3",
+            "6",
+            "10",
+            "bob(10), alice(3)"
+          ],
+          "failureReason": null,
+          "consoleOutput": "",
+          "errorText": null,
+          "durationMs": 1.0000000002037268
+        },
+        {
+          "testId": "l2-h1",
+          "status": "pass",
+          "actual": [
+            ""
+          ],
+          "expected": [
+            ""
+          ],
+          "failureReason": null,
+          "consoleOutput": "",
+          "errorText": null,
+          "durationMs": 0.600000000304135
+        },
+        {
+          "testId": "l2-h2",
+          "status": "pass",
+          "actual": [
+            ""
+          ],
+          "expected": [
+            ""
+          ],
+          "failureReason": null,
+          "consoleOutput": "",
+          "errorText": null,
+          "durationMs": 0.49999999964711606
+        },
+        {
+          "testId": "l2-h3",
+          "status": "pass",
+          "actual": [
+            "true",
+            "2",
+            "alice(2)"
+          ],
+          "expected": [
+            "true",
+            "2",
+            "alice(2)"
+          ],
+          "failureReason": null,
+          "consoleOutput": "",
+          "errorText": null,
+          "durationMs": 0.7000000000516593
+        },
+        {
+          "testId": "l2-h4",
+          "status": "fail",
+          "actual": [
+            "true",
+            "true",
+            "3",
+            "3",
+            "bob(3), alice(3)"
+          ],
+          "expected": [
+            "true",
+            "true",
+            "3",
+            "3",
+            "alice(3), bob(3)"
+          ],
+          "failureReason": {
+            "kind": "value",
+            "index": 4
+          },
+          "consoleOutput": "",
+          "errorText": null,
+          "durationMs": 0.600000000304135
+        },
+        {
+          "testId": "l2-h5",
+          "status": "fail",
+          "actual": [
+            "true",
+            "2",
+            "alice(2)"
+          ],
+          "expected": [
+            "true",
+            "2",
+            ""
+          ],
+          "failureReason": {
+            "kind": "value",
+            "index": 2
+          },
+          "consoleOutput": "",
+          "errorText": null,
+          "durationMs": 0.5999999998493877
+        }
+      ],
+      "tests": [
+        {
+          "id": "l1-v1",
+          "level": 1,
+          "hidden": false
+        },
+        {
+          "id": "l1-v2",
+          "level": 1,
+          "hidden": false
+        },
+        {
+          "id": "l1-h1",
+          "level": 1,
+          "hidden": true,
+          "probes": "create-duplicate"
+        },
+        {
+          "id": "l1-h2",
+          "level": 1,
+          "hidden": true,
+          "probes": "has-absent"
+        },
+        {
+          "id": "l1-h3",
+          "level": 1,
+          "hidden": true,
+          "probes": "delete-absent"
+        },
+        {
+          "id": "l1-h4",
+          "level": 1,
+          "hidden": true,
+          "probes": "delete-then-recreate"
+        },
+        {
+          "id": "l1-h5",
+          "level": 1,
+          "hidden": true,
+          "probes": "has-after-delete"
+        },
+        {
+          "id": "l2-v1",
+          "level": 2,
+          "hidden": false
+        },
+        {
+          "id": "l2-v2",
+          "level": 2,
+          "hidden": false
+        },
+        {
+          "id": "l2-h1",
+          "level": 2,
+          "hidden": true,
+          "probes": "record-absent"
+        },
+        {
+          "id": "l2-h2",
+          "level": 2,
+          "hidden": true,
+          "probes": "rank-empty"
+        },
+        {
+          "id": "l2-h3",
+          "level": 2,
+          "hidden": true,
+          "probes": "rank-fewer-than-n"
+        },
+        {
+          "id": "l2-h4",
+          "level": 2,
+          "hidden": true,
+          "probes": "rank-tiebreak-equal-totals"
+        },
+        {
+          "id": "l2-h5",
+          "level": 2,
+          "hidden": true,
+          "probes": "rank-n-zero"
+        }
+      ],
+      "passed": false,
+      "brokenLevels": [],
+      "scoreAfter": 207,
+      "codeSnapshot": "class Ledger:\n    def __init__(self):\n        self.registry = []\n        self.registry_lookup = set()\n        self.record = dict()\n\n    def process(self, query):\n        operation, value , amount = query\n\n        if operation == 'CREATE':\n            if value in self.registry_lookup:\n                return \"false\"\n            self.registry.append(value)\n            self.registry_lookup = set(self.registry)\n            self.record[value] = 0\n            return \"true\"\n        \n        if operation == 'GET':\n            for i in range(len(self.registry)):\n                if self.registry[i] == value:\n                    return str(i)\n            return \"\"\n\n        if operation == 'DELETE':\n            if value in self.registry_lookup:\n                self.registry.remove(value)\n                self.registry_lookup = set(self.registry)\n                self.record.pop(value, None)\n                return \"true\"\n            else:\n                return \"false\"\n\n        if operation == 'RECORD':\n            if value in self.record: \n                self.record[value] += int(amount)\n                return str(self.record[value])\n            \n            return \"\"\n\n        if operation == 'TOP':\n            temp = dict(sorted(self.record.items() , key = lambda kv : -kv[1]))\n            res = ''\n            for k,v  in temp.items():\n                res = res + k + '('+ str(v) + ')' \n                res += ', '\n            return res[:len(res)-2]\n\n\n            \n\n        else:\n            return \"false\"\n\n\ndef solution(queries):\n    ledger = Ledger()\n    results = []\n    for query in queries:\n        if  len(query) == 2:\n            query.append(-1)\n        results.append( ledger.process(query))\n    return results\n\n\n\n"
+    },
+    {
+      "id": "mwn3v6bs-kmf2hv",
+      "at": 1795065860296,
+      "level": 2,
+      "results": [
+        {
+          "testId": "l1-v1",
+          "status": "pass",
+          "actual": [
+            "true",
+            "0",
+            "false",
+            "true",
+            ""
+          ],
+          "expected": [
+            "true",
+            "0",
+            "false",
+            "true",
+            ""
+          ],
+          "failureReason": null,
+          "consoleOutput": "",
+          "errorText": null,
+          "durationMs": 1.3000000003557943
+        },
+        {
+          "testId": "l1-v2",
+          "status": "pass",
+          "actual": [
+            "true",
+            "false",
+            "0",
+            "true",
+            "",
+            "false"
+          ],
+          "expected": [
+            "true",
+            "false",
+            "0",
+            "true",
+            "",
+            "false"
+          ],
+          "failureReason": null,
+          "consoleOutput": "",
+          "errorText": null,
+          "durationMs": 1.6999999998006388
+        },
+        {
+          "testId": "l1-h1",
+          "status": "pass",
+          "actual": [
+            "true",
+            "false"
+          ],
+          "expected": [
+            "true",
+            "false"
+          ],
+          "failureReason": null,
+          "consoleOutput": "",
+          "errorText": null,
+          "durationMs": 1.4000000001033186
+        },
+        {
+          "testId": "l1-h2",
+          "status": "pass",
+          "actual": [
+            ""
+          ],
+          "expected": [
+            ""
+          ],
+          "failureReason": null,
+          "consoleOutput": "",
+          "errorText": null,
+          "durationMs": 0.7999999997991836
+        },
+        {
+          "testId": "l1-h3",
+          "status": "pass",
+          "actual": [
+            "false"
+          ],
+          "expected": [
+            "false"
+          ],
+          "failureReason": null,
+          "consoleOutput": "",
+          "errorText": null,
+          "durationMs": 1.7000000002553861
+        },
+        {
+          "testId": "l1-h4",
+          "status": "pass",
+          "actual": [
+            "true",
+            "true",
+            "true"
+          ],
+          "expected": [
+            "true",
+            "true",
+            "true"
+          ],
+          "failureReason": null,
+          "consoleOutput": "",
+          "errorText": null,
+          "durationMs": 0.5999999998493877
+        },
+        {
+          "testId": "l1-h5",
+          "status": "pass",
+          "actual": [
+            "true",
+            "true",
+            ""
+          ],
+          "expected": [
+            "true",
+            "true",
+            ""
+          ],
+          "failureReason": null,
+          "consoleOutput": "",
+          "errorText": null,
+          "durationMs": 0.49999999964711606
+        },
+        {
+          "testId": "l2-v1",
+          "status": "pass",
+          "actual": [
+            "true",
+            "3",
+            "7",
+            "alice(7)"
+          ],
+          "expected": [
+            "true",
+            "3",
+            "7",
+            "alice(7)"
+          ],
+          "failureReason": null,
+          "consoleOutput": "",
+          "errorText": null,
+          "durationMs": 0.5000000001018634
+        },
+        {
+          "testId": "l2-v2",
+          "status": "pass",
+          "actual": [
+            "true",
+            "true",
+            "3",
+            "6",
+            "10",
+            "bob(10), alice(3)"
+          ],
+          "expected": [
+            "true",
+            "true",
+            "3",
+            "6",
+            "10",
+            "bob(10), alice(3)"
+          ],
+          "failureReason": null,
+          "consoleOutput": "",
+          "errorText": null,
+          "durationMs": 0.7000000000516593
+        },
+        {
+          "testId": "l2-h1",
+          "status": "pass",
+          "actual": [
+            ""
+          ],
+          "expected": [
+            ""
+          ],
+          "failureReason": null,
+          "consoleOutput": "",
+          "errorText": null,
+          "durationMs": 0.5999999998493877
+        },
+        {
+          "testId": "l2-h2",
+          "status": "pass",
+          "actual": [
+            ""
+          ],
+          "expected": [
+            ""
+          ],
+          "failureReason": null,
+          "consoleOutput": "",
+          "errorText": null,
+          "durationMs": 0.699999999596912
+        },
+        {
+          "testId": "l2-h3",
+          "status": "pass",
+          "actual": [
+            "true",
+            "2",
+            "alice(2)"
+          ],
+          "expected": [
+            "true",
+            "2",
+            "alice(2)"
+          ],
+          "failureReason": null,
+          "consoleOutput": "",
+          "errorText": null,
+          "durationMs": 0.8000000002539309
+        },
+        {
+          "testId": "l2-h4",
+          "status": "pass",
+          "actual": [
+            "true",
+            "true",
+            "3",
+            "3",
+            "alice(3), bob(3)"
+          ],
+          "expected": [
+            "true",
+            "true",
+            "3",
+            "3",
+            "alice(3), bob(3)"
+          ],
+          "failureReason": null,
+          "consoleOutput": "",
+          "errorText": null,
+          "durationMs": 0.5999999998493877
+        },
+        {
+          "testId": "l2-h5",
+          "status": "fail",
+          "actual": [
+            "true",
+            "2",
+            "alice(2)"
+          ],
+          "expected": [
+            "true",
+            "2",
+            ""
+          ],
+          "failureReason": {
+            "kind": "value",
+            "index": 2
+          },
+          "consoleOutput": "",
+          "errorText": null,
+          "durationMs": 0.3999999998995918
+        }
+      ],
+      "tests": [
+        {
+          "id": "l1-v1",
+          "level": 1,
+          "hidden": false
+        },
+        {
+          "id": "l1-v2",
+          "level": 1,
+          "hidden": false
+        },
+        {
+          "id": "l1-h1",
+          "level": 1,
+          "hidden": true,
+          "probes": "create-duplicate"
+        },
+        {
+          "id": "l1-h2",
+          "level": 1,
+          "hidden": true,
+          "probes": "has-absent"
+        },
+        {
+          "id": "l1-h3",
+          "level": 1,
+          "hidden": true,
+          "probes": "delete-absent"
+        },
+        {
+          "id": "l1-h4",
+          "level": 1,
+          "hidden": true,
+          "probes": "delete-then-recreate"
+        },
+        {
+          "id": "l1-h5",
+          "level": 1,
+          "hidden": true,
+          "probes": "has-after-delete"
+        },
+        {
+          "id": "l2-v1",
+          "level": 2,
+          "hidden": false
+        },
+        {
+          "id": "l2-v2",
+          "level": 2,
+          "hidden": false
+        },
+        {
+          "id": "l2-h1",
+          "level": 2,
+          "hidden": true,
+          "probes": "record-absent"
+        },
+        {
+          "id": "l2-h2",
+          "level": 2,
+          "hidden": true,
+          "probes": "rank-empty"
+        },
+        {
+          "id": "l2-h3",
+          "level": 2,
+          "hidden": true,
+          "probes": "rank-fewer-than-n"
+        },
+        {
+          "id": "l2-h4",
+          "level": 2,
+          "hidden": true,
+          "probes": "rank-tiebreak-equal-totals"
+        },
+        {
+          "id": "l2-h5",
+          "level": 2,
+          "hidden": true,
+          "probes": "rank-n-zero"
+        }
+      ],
+      "passed": false,
+      "brokenLevels": [],
+      "scoreAfter": 228,
+      "codeSnapshot": "class Ledger:\n    def __init__(self):\n        self.registry = []\n        self.registry_lookup = set()\n        self.record = dict()\n\n    def process(self, query):\n        operation, value , amount = query\n\n        if operation == 'CREATE':\n            if value in self.registry_lookup:\n                return \"false\"\n            self.registry.append(value)\n            self.registry_lookup = set(self.registry)\n            self.record[value] = 0\n            return \"true\"\n        \n        if operation == 'GET':\n            for i in range(len(self.registry)):\n                if self.registry[i] == value:\n                    return str(i)\n            return \"\"\n\n        if operation == 'DELETE':\n            if value in self.registry_lookup:\n                self.registry.remove(value)\n                self.registry_lookup = set(self.registry)\n                self.record.pop(value, None)\n                return \"true\"\n            else:\n                return \"false\"\n\n        if operation == 'RECORD':\n            if value in self.record: \n                self.record[value] += int(amount)\n                return str(self.record[value])\n            \n            return \"\"\n\n        if operation == 'TOP':\n            temp = dict(sorted(self.record.items() , key = lambda kv : (-kv[1], kv)))\n            res = ''\n            for k,v  in temp.items():\n                res = res + k + '('+ str(v) + ')' \n                res += ', '\n            return res[:len(res)-2]\n\n\n            \n\n        else:\n            return \"false\"\n\n\ndef solution(queries):\n    ledger = Ledger()\n    results = []\n    for query in queries:\n        if  len(query) == 2:\n            query.append(-1)\n        results.append( ledger.process(query))\n    return results\n\n\n\n"
+    },
+    {
+      "id": "mwn3yy4n-acdjpz",
+      "at": 1795066036295,
+      "level": 2,
+      "results": [
+        {
+          "testId": "l1-v1",
+          "status": "pass",
+          "actual": [
+            "true",
+            "0",
+            "false",
+            "true",
+            ""
+          ],
+          "expected": [
+            "true",
+            "0",
+            "false",
+            "true",
+            ""
+          ],
+          "failureReason": null,
+          "consoleOutput": "",
+          "errorText": null,
+          "durationMs": 1.4000000001033186
+        },
+        {
+          "testId": "l1-v2",
+          "status": "pass",
+          "actual": [
+            "true",
+            "false",
+            "0",
+            "true",
+            "",
+            "false"
+          ],
+          "expected": [
+            "true",
+            "false",
+            "0",
+            "true",
+            "",
+            "false"
+          ],
+          "failureReason": null,
+          "consoleOutput": "",
+          "errorText": null,
+          "durationMs": 1.1999999996987754
+        },
+        {
+          "testId": "l1-h1",
+          "status": "pass",
+          "actual": [
+            "true",
+            "false"
+          ],
+          "expected": [
+            "true",
+            "false"
+          ],
+          "failureReason": null,
+          "consoleOutput": "",
+          "errorText": null,
+          "durationMs": 1.4999999998508429
+        },
+        {
+          "testId": "l1-h2",
+          "status": "pass",
+          "actual": [
+            ""
+          ],
+          "expected": [
+            ""
+          ],
+          "failureReason": null,
+          "consoleOutput": "",
+          "errorText": null,
+          "durationMs": 1.0000000002037268
+        },
+        {
+          "testId": "l1-h3",
+          "status": "pass",
+          "actual": [
+            "false"
+          ],
+          "expected": [
+            "false"
+          ],
+          "failureReason": null,
+          "consoleOutput": "",
+          "errorText": null,
+          "durationMs": 0.9000000000014552
+        },
+        {
+          "testId": "l1-h4",
+          "status": "pass",
+          "actual": [
+            "true",
+            "true",
+            "true"
+          ],
+          "expected": [
+            "true",
+            "true",
+            "true"
+          ],
+          "failureReason": null,
+          "consoleOutput": "",
+          "errorText": null,
+          "durationMs": 1.4000000001033186
+        },
+        {
+          "testId": "l1-h5",
+          "status": "pass",
+          "actual": [
+            "true",
+            "true",
+            ""
+          ],
+          "expected": [
+            "true",
+            "true",
+            ""
+          ],
+          "failureReason": null,
+          "consoleOutput": "",
+          "errorText": null,
+          "durationMs": 0.7999999997991836
+        },
+        {
+          "testId": "l2-v1",
+          "status": "pass",
+          "actual": [
+            "true",
+            "3",
+            "7",
+            "alice(7)"
+          ],
+          "expected": [
+            "true",
+            "3",
+            "7",
+            "alice(7)"
+          ],
+          "failureReason": null,
+          "consoleOutput": "",
+          "errorText": null,
+          "durationMs": 1.6999999998006388
+        },
+        {
+          "testId": "l2-v2",
+          "status": "pass",
+          "actual": [
+            "true",
+            "true",
+            "3",
+            "6",
+            "10",
+            "bob(10), alice(3)"
+          ],
+          "expected": [
+            "true",
+            "true",
+            "3",
+            "6",
+            "10",
+            "bob(10), alice(3)"
+          ],
+          "failureReason": null,
+          "consoleOutput": "",
+          "errorText": null,
+          "durationMs": 0.7000000000516593
+        },
+        {
+          "testId": "l2-h1",
+          "status": "pass",
+          "actual": [
+            ""
+          ],
+          "expected": [
+            ""
+          ],
+          "failureReason": null,
+          "consoleOutput": "",
+          "errorText": null,
+          "durationMs": 0.5999999998493877
+        },
+        {
+          "testId": "l2-h2",
+          "status": "pass",
+          "actual": [
+            ""
+          ],
+          "expected": [
+            ""
+          ],
+          "failureReason": null,
+          "consoleOutput": "",
+          "errorText": null,
+          "durationMs": 0.40000000035433914
+        },
+        {
+          "testId": "l2-h3",
+          "status": "pass",
+          "actual": [
+            "true",
+            "2",
+            "alice(2)"
+          ],
+          "expected": [
+            "true",
+            "2",
+            "alice(2)"
+          ],
+          "failureReason": null,
+          "consoleOutput": "",
+          "errorText": null,
+          "durationMs": 0.7000000000516593
+        },
+        {
+          "testId": "l2-h4",
+          "status": "pass",
+          "actual": [
+            "true",
+            "true",
+            "3",
+            "3",
+            "alice(3), bob(3)"
+          ],
+          "expected": [
+            "true",
+            "true",
+            "3",
+            "3",
+            "alice(3), bob(3)"
+          ],
+          "failureReason": null,
+          "consoleOutput": "",
+          "errorText": null,
+          "durationMs": 0.7000000000516593
+        },
+        {
+          "testId": "l2-h5",
+          "status": "fail",
+          "actual": [
+            "true",
+            "2",
+            "alice(2)"
+          ],
+          "expected": [
+            "true",
+            "2",
+            ""
+          ],
+          "failureReason": {
+            "kind": "value",
+            "index": 2
+          },
+          "consoleOutput": "",
+          "errorText": null,
+          "durationMs": 0.5999999998493877
+        }
+      ],
+      "tests": [
+        {
+          "id": "l1-v1",
+          "level": 1,
+          "hidden": false
+        },
+        {
+          "id": "l1-v2",
+          "level": 1,
+          "hidden": false
+        },
+        {
+          "id": "l1-h1",
+          "level": 1,
+          "hidden": true,
+          "probes": "create-duplicate"
+        },
+        {
+          "id": "l1-h2",
+          "level": 1,
+          "hidden": true,
+          "probes": "has-absent"
+        },
+        {
+          "id": "l1-h3",
+          "level": 1,
+          "hidden": true,
+          "probes": "delete-absent"
+        },
+        {
+          "id": "l1-h4",
+          "level": 1,
+          "hidden": true,
+          "probes": "delete-then-recreate"
+        },
+        {
+          "id": "l1-h5",
+          "level": 1,
+          "hidden": true,
+          "probes": "has-after-delete"
+        },
+        {
+          "id": "l2-v1",
+          "level": 2,
+          "hidden": false
+        },
+        {
+          "id": "l2-v2",
+          "level": 2,
+          "hidden": false
+        },
+        {
+          "id": "l2-h1",
+          "level": 2,
+          "hidden": true,
+          "probes": "record-absent"
+        },
+        {
+          "id": "l2-h2",
+          "level": 2,
+          "hidden": true,
+          "probes": "rank-empty"
+        },
+        {
+          "id": "l2-h3",
+          "level": 2,
+          "hidden": true,
+          "probes": "rank-fewer-than-n"
+        },
+        {
+          "id": "l2-h4",
+          "level": 2,
+          "hidden": true,
+          "probes": "rank-tiebreak-equal-totals"
+        },
+        {
+          "id": "l2-h5",
+          "level": 2,
+          "hidden": true,
+          "probes": "rank-n-zero"
+        }
+      ],
+      "passed": false,
+      "brokenLevels": [],
+      "scoreAfter": 228,
+      "codeSnapshot": "class Ledger:\n    def __init__(self):\n        self.registry = []\n        self.registry_lookup = set()\n        self.record = dict()\n\n    def process(self, query):\n        operation, value , amount = query\n\n        if operation == 'CREATE':\n            if value in self.registry_lookup:\n                return \"false\"\n            self.registry.append(value)\n            self.registry_lookup = set(self.registry)\n            self.record[value] = 0\n            return \"true\"\n        \n        if operation == 'GET':\n            for i in range(len(self.registry)):\n                if self.registry[i] == value:\n                    return str(i)\n            return \"\"\n\n        if operation == 'DELETE':\n            if value in self.registry_lookup:\n                self.registry.remove(value)\n                self.registry_lookup = set(self.registry)\n                self.record.pop(value, None)\n                return \"true\"\n            else:\n                return \"false\"\n\n        if operation == 'RECORD':\n            if value in self.record: \n                self.record[value] += int(amount)\n                return str(self.record[value])\n            \n            return \"\"\n\n        if operation == 'TOP':\n            temp = dict(sorted(self.record.items() , key = lambda kv : (-kv[1], kv)))\n            res = ''\n            for k,v  in temp.items():\n                if v!= 0:\n                    res = res + k + '('+ str(v) + ')' \n                    res += ', '\n            return res[:len(res)-2] if len(res) > 0 else \"\"\n\n\n        else:\n            return \"false\"\n\n\ndef solution(queries):\n    ledger = Ledger()\n    results = []\n    for query in queries:\n        if  len(query) == 2:\n            query.append(-1)\n        results.append( ledger.process(query))\n    return results\n\n\n\n"
+    },
+    {
+      "id": "mwn41oi0-vijc9x",
+      "at": 1795066163784,
+      "level": 2,
+      "results": [
+        {
+          "testId": "l1-v1",
+          "status": "pass",
+          "actual": [
+            "true",
+            "0",
+            "false",
+            "true",
+            ""
+          ],
+          "expected": [
+            "true",
+            "0",
+            "false",
+            "true",
+            ""
+          ],
+          "failureReason": null,
+          "consoleOutput": "",
+          "errorText": null,
+          "durationMs": 1.2000000001535227
+        },
+        {
+          "testId": "l1-v2",
+          "status": "pass",
+          "actual": [
+            "true",
+            "false",
+            "0",
+            "true",
+            "",
+            "false"
+          ],
+          "expected": [
+            "true",
+            "false",
+            "0",
+            "true",
+            "",
+            "false"
+          ],
+          "failureReason": null,
+          "consoleOutput": "",
+          "errorText": null,
+          "durationMs": 1.1999999996987754
+        },
+        {
+          "testId": "l1-h1",
+          "status": "pass",
+          "actual": [
+            "true",
+            "false"
+          ],
+          "expected": [
+            "true",
+            "false"
+          ],
+          "failureReason": null,
+          "consoleOutput": "",
+          "errorText": null,
+          "durationMs": 0.7000000000516593
+        },
+        {
+          "testId": "l1-h2",
+          "status": "pass",
+          "actual": [
+            ""
+          ],
+          "expected": [
+            ""
+          ],
+          "failureReason": null,
+          "consoleOutput": "",
+          "errorText": null,
+          "durationMs": 0.9000000000014552
+        },
+        {
+          "testId": "l1-h3",
+          "status": "pass",
+          "actual": [
+            "false"
+          ],
+          "expected": [
+            "false"
+          ],
+          "failureReason": null,
+          "consoleOutput": "",
+          "errorText": null,
+          "durationMs": 0.7000000000516593
+        },
+        {
+          "testId": "l1-h4",
+          "status": "pass",
+          "actual": [
+            "true",
+            "true",
+            "true"
+          ],
+          "expected": [
+            "true",
+            "true",
+            "true"
+          ],
+          "failureReason": null,
+          "consoleOutput": "",
+          "errorText": null,
+          "durationMs": 0.5999999998493877
+        },
+        {
+          "testId": "l1-h5",
+          "status": "pass",
+          "actual": [
+            "true",
+            "true",
+            ""
+          ],
+          "expected": [
+            "true",
+            "true",
+            ""
+          ],
+          "failureReason": null,
+          "consoleOutput": "",
+          "errorText": null,
+          "durationMs": 0.600000000304135
+        },
+        {
+          "testId": "l2-v1",
+          "status": "pass",
+          "actual": [
+            "true",
+            "3",
+            "7",
+            "alice(7)"
+          ],
+          "expected": [
+            "true",
+            "3",
+            "7",
+            "alice(7)"
+          ],
+          "failureReason": null,
+          "consoleOutput": "",
+          "errorText": null,
+          "durationMs": 0.5999999998493877
+        },
+        {
+          "testId": "l2-v2",
+          "status": "pass",
+          "actual": [
+            "true",
+            "true",
+            "3",
+            "6",
+            "10",
+            "bob(10), alice(3)"
+          ],
+          "expected": [
+            "true",
+            "true",
+            "3",
+            "6",
+            "10",
+            "bob(10), alice(3)"
+          ],
+          "failureReason": null,
+          "consoleOutput": "",
+          "errorText": null,
+          "durationMs": 0.5000000001018634
+        },
+        {
+          "testId": "l2-h1",
+          "status": "pass",
+          "actual": [
+            ""
+          ],
+          "expected": [
+            ""
+          ],
+          "failureReason": null,
+          "consoleOutput": "",
+          "errorText": null,
+          "durationMs": 1.4000000001033186
+        },
+        {
+          "testId": "l2-h2",
+          "status": "pass",
+          "actual": [
+            ""
+          ],
+          "expected": [
+            ""
+          ],
+          "failureReason": null,
+          "consoleOutput": "",
+          "errorText": null,
+          "durationMs": 0.49999999964711606
+        },
+        {
+          "testId": "l2-h3",
+          "status": "pass",
+          "actual": [
+            "true",
+            "2",
+            "alice(2)"
+          ],
+          "expected": [
+            "true",
+            "2",
+            "alice(2)"
+          ],
+          "failureReason": null,
+          "consoleOutput": "",
+          "errorText": null,
+          "durationMs": 0.5999999998493877
+        },
+        {
+          "testId": "l2-h4",
+          "status": "pass",
+          "actual": [
+            "true",
+            "true",
+            "3",
+            "3",
+            "alice(3), bob(3)"
+          ],
+          "expected": [
+            "true",
+            "true",
+            "3",
+            "3",
+            "alice(3), bob(3)"
+          ],
+          "failureReason": null,
+          "consoleOutput": "",
+          "errorText": null,
+          "durationMs": 0.8000000002539309
+        },
+        {
+          "testId": "l2-h5",
+          "status": "fail",
+          "actual": [
+            "true",
+            "2",
+            "alice(2)"
+          ],
+          "expected": [
+            "true",
+            "2",
+            ""
+          ],
+          "failureReason": {
+            "kind": "value",
+            "index": 2
+          },
+          "consoleOutput": "",
+          "errorText": null,
+          "durationMs": 0.600000000304135
+        }
+      ],
+      "tests": [
+        {
+          "id": "l1-v1",
+          "level": 1,
+          "hidden": false
+        },
+        {
+          "id": "l1-v2",
+          "level": 1,
+          "hidden": false
+        },
+        {
+          "id": "l1-h1",
+          "level": 1,
+          "hidden": true,
+          "probes": "create-duplicate"
+        },
+        {
+          "id": "l1-h2",
+          "level": 1,
+          "hidden": true,
+          "probes": "has-absent"
+        },
+        {
+          "id": "l1-h3",
+          "level": 1,
+          "hidden": true,
+          "probes": "delete-absent"
+        },
+        {
+          "id": "l1-h4",
+          "level": 1,
+          "hidden": true,
+          "probes": "delete-then-recreate"
+        },
+        {
+          "id": "l1-h5",
+          "level": 1,
+          "hidden": true,
+          "probes": "has-after-delete"
+        },
+        {
+          "id": "l2-v1",
+          "level": 2,
+          "hidden": false
+        },
+        {
+          "id": "l2-v2",
+          "level": 2,
+          "hidden": false
+        },
+        {
+          "id": "l2-h1",
+          "level": 2,
+          "hidden": true,
+          "probes": "record-absent"
+        },
+        {
+          "id": "l2-h2",
+          "level": 2,
+          "hidden": true,
+          "probes": "rank-empty"
+        },
+        {
+          "id": "l2-h3",
+          "level": 2,
+          "hidden": true,
+          "probes": "rank-fewer-than-n"
+        },
+        {
+          "id": "l2-h4",
+          "level": 2,
+          "hidden": true,
+          "probes": "rank-tiebreak-equal-totals"
+        },
+        {
+          "id": "l2-h5",
+          "level": 2,
+          "hidden": true,
+          "probes": "rank-n-zero"
+        }
+      ],
+      "passed": false,
+      "brokenLevels": [],
+      "scoreAfter": 228,
+      "codeSnapshot": "class Ledger:\n    def __init__(self):\n        self.registry = []\n        self.registry_lookup = set()\n        self.record = dict()\n\n    def process(self, query):\n        operation, value , amount = query\n\n        if operation == 'CREATE':\n            if value in self.registry_lookup:\n                return \"false\"\n            self.registry.append(value)\n            self.registry_lookup = set(self.registry)\n            self.record[value] = 0\n            return \"true\"\n        \n        if operation == 'GET':\n            for i in range(len(self.registry)):\n                if self.registry[i] == value:\n                    return str(i)\n            return \"\"\n\n        if operation == 'DELETE':\n            if value in self.registry_lookup:\n                self.registry.remove(value)\n                self.registry_lookup = set(self.registry)\n                self.record.pop(value, None)\n                return \"true\"\n            else:\n                return \"false\"\n\n        if operation == 'RECORD':\n            if value in self.record: \n                self.record[value] += int(amount)\n                return str(self.record[value])\n            return \"\"\n\n        if operation == 'TOP':\n            temp = dict(sorted(self.record.items() , key = lambda kv : (-kv[1], kv)))\n            res = ''\n            for k,v  in temp.items():\n                if v!= 0:\n                    res = res + k + '('+ str(v) + ')' \n                    res += ', '\n            return res[:len(res)-2] if len(res) > 0 else \"\"\n\n\n        else:\n            return \"false\"\n\n\ndef solution(queries):\n    ledger = Ledger()\n    results = []\n    for query in queries:\n        if  len(query) == 2:\n            query.append(-1)\n        results.append( ledger.process(query))\n    return results\n\n\n\n"
+    },
+    {
+      "id": "mwn46g2g-jmpsme",
+      "at": 1795066386135,
+      "level": 2,
+      "results": [
+        {
+          "testId": "l1-v1",
+          "status": "pass",
+          "actual": [
+            "true",
+            "0",
+            "false",
+            "true",
+            ""
+          ],
+          "expected": [
+            "true",
+            "0",
+            "false",
+            "true",
+            ""
+          ],
+          "failureReason": null,
+          "consoleOutput": "",
+          "errorText": null,
+          "durationMs": 1.2000000001535227
+        },
+        {
+          "testId": "l1-v2",
+          "status": "pass",
+          "actual": [
+            "true",
+            "false",
+            "0",
+            "true",
+            "",
+            "false"
+          ],
+          "expected": [
+            "true",
+            "false",
+            "0",
+            "true",
+            "",
+            "false"
+          ],
+          "failureReason": null,
+          "consoleOutput": "",
+          "errorText": null,
+          "durationMs": 1.299999999901047
+        },
+        {
+          "testId": "l1-h1",
+          "status": "pass",
+          "actual": [
+            "true",
+            "false"
+          ],
+          "expected": [
+            "true",
+            "false"
+          ],
+          "failureReason": null,
+          "consoleOutput": "",
+          "errorText": null,
+          "durationMs": 0.7000000000516593
+        },
+        {
+          "testId": "l1-h2",
+          "status": "pass",
+          "actual": [
+            ""
+          ],
+          "expected": [
+            ""
+          ],
+          "failureReason": null,
+          "consoleOutput": "",
+          "errorText": null,
+          "durationMs": 0.7000000000516593
+        },
+        {
+          "testId": "l1-h3",
+          "status": "pass",
+          "actual": [
+            "false"
+          ],
+          "expected": [
+            "false"
+          ],
+          "failureReason": null,
+          "consoleOutput": "",
+          "errorText": null,
+          "durationMs": 0.600000000304135
+        },
+        {
+          "testId": "l1-h4",
+          "status": "pass",
+          "actual": [
+            "true",
+            "true",
+            "true"
+          ],
+          "expected": [
+            "true",
+            "true",
+            "true"
+          ],
+          "failureReason": null,
+          "consoleOutput": "",
+          "errorText": null,
+          "durationMs": 0.8000000002539309
+        },
+        {
+          "testId": "l1-h5",
+          "status": "pass",
+          "actual": [
+            "true",
+            "true",
+            ""
+          ],
+          "expected": [
+            "true",
+            "true",
+            ""
+          ],
+          "failureReason": null,
+          "consoleOutput": "",
+          "errorText": null,
+          "durationMs": 0.7000000000516593
+        },
+        {
+          "testId": "l2-v1",
+          "status": "pass",
+          "actual": [
+            "true",
+            "3",
+            "7",
+            "alice(7)"
+          ],
+          "expected": [
+            "true",
+            "3",
+            "7",
+            "alice(7)"
+          ],
+          "failureReason": null,
+          "consoleOutput": "",
+          "errorText": null,
+          "durationMs": 0.5000000001018634
+        },
+        {
+          "testId": "l2-v2",
+          "status": "pass",
+          "actual": [
+            "true",
+            "true",
+            "3",
+            "6",
+            "10",
+            "bob(10), alice(3)"
+          ],
+          "expected": [
+            "true",
+            "true",
+            "3",
+            "6",
+            "10",
+            "bob(10), alice(3)"
+          ],
+          "failureReason": null,
+          "consoleOutput": "",
+          "errorText": null,
+          "durationMs": 0.8000000002539309
+        },
+        {
+          "testId": "l2-h1",
+          "status": "pass",
+          "actual": [
+            ""
+          ],
+          "expected": [
+            ""
+          ],
+          "failureReason": null,
+          "consoleOutput": "",
+          "errorText": null,
+          "durationMs": 0.5999999998493877
+        },
+        {
+          "testId": "l2-h2",
+          "status": "pass",
+          "actual": [
+            ""
+          ],
+          "expected": [
+            ""
+          ],
+          "failureReason": null,
+          "consoleOutput": "",
+          "errorText": null,
+          "durationMs": 0.600000000304135
+        },
+        {
+          "testId": "l2-h3",
+          "status": "pass",
+          "actual": [
+            "true",
+            "2",
+            "alice(2)"
+          ],
+          "expected": [
+            "true",
+            "2",
+            "alice(2)"
+          ],
+          "failureReason": null,
+          "consoleOutput": "",
+          "errorText": null,
+          "durationMs": 0.5000000001018634
+        },
+        {
+          "testId": "l2-h4",
+          "status": "pass",
+          "actual": [
+            "true",
+            "true",
+            "3",
+            "3",
+            "alice(3), bob(3)"
+          ],
+          "expected": [
+            "true",
+            "true",
+            "3",
+            "3",
+            "alice(3), bob(3)"
+          ],
+          "failureReason": null,
+          "consoleOutput": "",
+          "errorText": null,
+          "durationMs": 0.8000000002539309
+        },
+        {
+          "testId": "l2-h5",
+          "status": "pass",
+          "actual": [
+            "true",
+            "2",
+            ""
+          ],
+          "expected": [
+            "true",
+            "2",
+            ""
+          ],
+          "failureReason": null,
+          "consoleOutput": "",
+          "errorText": null,
+          "durationMs": 0.9000000000014552
+        }
+      ],
+      "tests": [
+        {
+          "id": "l1-v1",
+          "level": 1,
+          "hidden": false
+        },
+        {
+          "id": "l1-v2",
+          "level": 1,
+          "hidden": false
+        },
+        {
+          "id": "l1-h1",
+          "level": 1,
+          "hidden": true,
+          "probes": "create-duplicate"
+        },
+        {
+          "id": "l1-h2",
+          "level": 1,
+          "hidden": true,
+          "probes": "has-absent"
+        },
+        {
+          "id": "l1-h3",
+          "level": 1,
+          "hidden": true,
+          "probes": "delete-absent"
+        },
+        {
+          "id": "l1-h4",
+          "level": 1,
+          "hidden": true,
+          "probes": "delete-then-recreate"
+        },
+        {
+          "id": "l1-h5",
+          "level": 1,
+          "hidden": true,
+          "probes": "has-after-delete"
+        },
+        {
+          "id": "l2-v1",
+          "level": 2,
+          "hidden": false
+        },
+        {
+          "id": "l2-v2",
+          "level": 2,
+          "hidden": false
+        },
+        {
+          "id": "l2-h1",
+          "level": 2,
+          "hidden": true,
+          "probes": "record-absent"
+        },
+        {
+          "id": "l2-h2",
+          "level": 2,
+          "hidden": true,
+          "probes": "rank-empty"
+        },
+        {
+          "id": "l2-h3",
+          "level": 2,
+          "hidden": true,
+          "probes": "rank-fewer-than-n"
+        },
+        {
+          "id": "l2-h4",
+          "level": 2,
+          "hidden": true,
+          "probes": "rank-tiebreak-equal-totals"
+        },
+        {
+          "id": "l2-h5",
+          "level": 2,
+          "hidden": true,
+          "probes": "rank-n-zero"
+        }
+      ],
+      "passed": true,
+      "brokenLevels": [],
+      "scoreAfter": 250,
+      "codeSnapshot": "class Ledger:\n    def __init__(self):\n        self.registry = []\n        self.registry_lookup = set()\n        self.record = dict()\n\n    def process(self, query):\n        operation, value , amount = query\n\n        if operation == 'CREATE':\n            if value in self.registry_lookup:\n                return \"false\"\n            self.registry.append(value)\n            self.registry_lookup = set(self.registry)\n            self.record[value] = 0\n            return \"true\"\n        \n        if operation == 'GET':\n            for i in range(len(self.registry)):\n                if self.registry[i] == value:\n                    return str(i)\n            return \"\"\n\n        if operation == 'DELETE':\n            if value in self.registry_lookup:\n                self.registry.remove(value)\n                self.registry_lookup = set(self.registry)\n                self.record.pop(value, None)\n                return \"true\"\n            else:\n                return \"false\"\n\n        if operation == 'RECORD':\n            if value in self.record: \n                self.record[value] += int(amount)\n                return str(self.record[value])\n            return \"\"\n\n        if operation == 'TOP':\n            temp = dict(sorted(self.record.items() , key = lambda kv : (-kv[1], kv)))\n            res = ''\n            counter = 0\n            for k,v  in temp.items():\n                if v!= 0 and counter < int(value):\n                    res = res + k + '('+ str(v) + ')' \n                    res += ', '\n                    counter += 1\n            return res[:len(res)-2] if len(res) > 0 else \"\"\n\n\n        else:\n            return \"false\"\n\n\ndef solution(queries):\n    ledger = Ledger()\n    results = []\n    for query in queries:\n        if  len(query) == 2:\n            query.append(-1)\n        results.append( ledger.process(query))\n    return results\n\n\n\n"
+    },
+    {
+      "id": "mwn4q1dr-4fp4z5",
+      "at": 1795067300222,
+      "level": 3,
+      "results": [
+        {
+          "testId": "l1-v1",
+          "status": "pass",
+          "actual": [
+            "true",
+            "0",
+            "false",
+            "true",
+            ""
+          ],
+          "expected": [
+            "true",
+            "0",
+            "false",
+            "true",
+            ""
+          ],
+          "failureReason": null,
+          "consoleOutput": "",
+          "errorText": null,
+          "durationMs": 1.4000000001033186
+        },
+        {
+          "testId": "l1-v2",
+          "status": "pass",
+          "actual": [
+            "true",
+            "false",
+            "0",
+            "true",
+            "",
+            "false"
+          ],
+          "expected": [
+            "true",
+            "false",
+            "0",
+            "true",
+            "",
+            "false"
+          ],
+          "failureReason": null,
+          "consoleOutput": "",
+          "errorText": null,
+          "durationMs": 1.3999999996485712
+        },
+        {
+          "testId": "l1-h1",
+          "status": "pass",
+          "actual": [
+            "true",
+            "false"
+          ],
+          "expected": [
+            "true",
+            "false"
+          ],
+          "failureReason": null,
+          "consoleOutput": "",
+          "errorText": null,
+          "durationMs": 0.9000000000014552
+        },
+        {
+          "testId": "l1-h2",
+          "status": "pass",
+          "actual": [
+            ""
+          ],
+          "expected": [
+            ""
+          ],
+          "failureReason": null,
+          "consoleOutput": "",
+          "errorText": null,
+          "durationMs": 1.1000000004059984
+        },
+        {
+          "testId": "l1-h3",
+          "status": "pass",
+          "actual": [
+            "false"
+          ],
+          "expected": [
+            "false"
+          ],
+          "failureReason": null,
+          "consoleOutput": "",
+          "errorText": null,
+          "durationMs": 0.7999999997991836
+        },
+        {
+          "testId": "l1-h4",
+          "status": "pass",
+          "actual": [
+            "true",
+            "true",
+            "true"
+          ],
+          "expected": [
+            "true",
+            "true",
+            "true"
+          ],
+          "failureReason": null,
+          "consoleOutput": "",
+          "errorText": null,
+          "durationMs": 0.7999999997991836
+        },
+        {
+          "testId": "l1-h5",
+          "status": "pass",
+          "actual": [
+            "true",
+            "true",
+            ""
+          ],
+          "expected": [
+            "true",
+            "true",
+            ""
+          ],
+          "failureReason": null,
+          "consoleOutput": "",
+          "errorText": null,
+          "durationMs": 0.9000000000014552
+        },
+        {
+          "testId": "l2-v1",
+          "status": "pass",
+          "actual": [
+            "true",
+            "3",
+            "7",
+            "alice(7)"
+          ],
+          "expected": [
+            "true",
+            "3",
+            "7",
+            "alice(7)"
+          ],
+          "failureReason": null,
+          "consoleOutput": "",
+          "errorText": null,
+          "durationMs": 0.9999999997489795
+        },
+        {
+          "testId": "l2-v2",
+          "status": "pass",
+          "actual": [
+            "true",
+            "true",
+            "3",
+            "6",
+            "10",
+            "bob(10), alice(3)"
+          ],
+          "expected": [
+            "true",
+            "true",
+            "3",
+            "6",
+            "10",
+            "bob(10), alice(3)"
+          ],
+          "failureReason": null,
+          "consoleOutput": "",
+          "errorText": null,
+          "durationMs": 0.9999999997489795
+        },
+        {
+          "testId": "l2-h1",
+          "status": "pass",
+          "actual": [
+            ""
+          ],
+          "expected": [
+            ""
+          ],
+          "failureReason": null,
+          "consoleOutput": "",
+          "errorText": null,
+          "durationMs": 0.8000000002539309
+        },
+        {
+          "testId": "l2-h2",
+          "status": "pass",
+          "actual": [
+            ""
+          ],
+          "expected": [
+            ""
+          ],
+          "failureReason": null,
+          "consoleOutput": "",
+          "errorText": null,
+          "durationMs": 0.9000000000014552
+        },
+        {
+          "testId": "l2-h3",
+          "status": "pass",
+          "actual": [
+            "true",
+            "2",
+            "alice(2)"
+          ],
+          "expected": [
+            "true",
+            "2",
+            "alice(2)"
+          ],
+          "failureReason": null,
+          "consoleOutput": "",
+          "errorText": null,
+          "durationMs": 0.8000000002539309
+        },
+        {
+          "testId": "l2-h4",
+          "status": "pass",
+          "actual": [
+            "true",
+            "true",
+            "3",
+            "3",
+            "alice(3), bob(3)"
+          ],
+          "expected": [
+            "true",
+            "true",
+            "3",
+            "3",
+            "alice(3), bob(3)"
+          ],
+          "failureReason": null,
+          "consoleOutput": "",
+          "errorText": null,
+          "durationMs": 0.7999999997991836
+        },
+        {
+          "testId": "l2-h5",
+          "status": "pass",
+          "actual": [
+            "true",
+            "2",
+            ""
+          ],
+          "expected": [
+            "true",
+            "2",
+            ""
+          ],
+          "failureReason": null,
+          "consoleOutput": "",
+          "errorText": null,
+          "durationMs": 1.0000000002037268
+        },
+        {
+          "testId": "l3-v1",
+          "status": "pass",
+          "actual": [
+            "true",
+            "true",
+            "true",
+            "2"
+          ],
+          "expected": [
+            "true",
+            "true",
+            "true",
+            "2"
+          ],
+          "failureReason": null,
+          "consoleOutput": "",
+          "errorText": null,
+          "durationMs": 0.7999999997991836
+        },
+        {
+          "testId": "l3-v2",
+          "status": "pass",
+          "actual": [
+            "true",
+            "true",
+            "true",
+            "2",
+            "3",
+            "false"
+          ],
+          "expected": [
+            "true",
+            "true",
+            "true",
+            "2",
+            "3",
+            "false"
+          ],
+          "failureReason": null,
+          "consoleOutput": "",
+          "errorText": null,
+          "durationMs": 0.7000000000516593
+        },
+        {
+          "testId": "l3-h1",
+          "status": "pass",
+          "actual": [
+            "true",
+            "false"
+          ],
+          "expected": [
+            "true",
+            "false"
+          ],
+          "failureReason": null,
+          "consoleOutput": "",
+          "errorText": null,
+          "durationMs": 0.8000000002539309
+        },
+        {
+          "testId": "l3-h2",
+          "status": "pass",
+          "actual": [
+            "true",
+            "false"
+          ],
+          "expected": [
+            "true",
+            "false"
+          ],
+          "failureReason": null,
+          "consoleOutput": "",
+          "errorText": null,
+          "durationMs": 0.7999999997991836
+        },
+        {
+          "testId": "l3-h3",
+          "status": "pass",
+          "actual": [
+            "true",
+            "true",
+            "false"
+          ],
+          "expected": [
+            "true",
+            "true",
+            "false"
+          ],
+          "failureReason": null,
+          "consoleOutput": "",
+          "errorText": null,
+          "durationMs": 0.5999999998493877
+        },
+        {
+          "testId": "l3-h4",
+          "status": "pass",
+          "actual": [
+            "true",
+            "true",
+            "true",
+            "0",
+            "3"
+          ],
+          "expected": [
+            "true",
+            "true",
+            "true",
+            "0",
+            "3"
+          ],
+          "failureReason": null,
+          "consoleOutput": "",
+          "errorText": null,
+          "durationMs": 0.9000000000014552
+        },
+        {
+          "testId": "l3-h5",
+          "status": "fail",
+          "actual": [
+            "true",
+            "true"
+          ],
+          "expected": [
+            "true",
+            "false"
+          ],
+          "failureReason": {
+            "kind": "value",
+            "index": 1
+          },
+          "consoleOutput": "",
+          "errorText": null,
+          "durationMs": 0.9000000000014552
+        }
+      ],
+      "tests": [
+        {
+          "id": "l1-v1",
+          "level": 1,
+          "hidden": false
+        },
+        {
+          "id": "l1-v2",
+          "level": 1,
+          "hidden": false
+        },
+        {
+          "id": "l1-h1",
+          "level": 1,
+          "hidden": true,
+          "probes": "create-duplicate"
+        },
+        {
+          "id": "l1-h2",
+          "level": 1,
+          "hidden": true,
+          "probes": "has-absent"
+        },
+        {
+          "id": "l1-h3",
+          "level": 1,
+          "hidden": true,
+          "probes": "delete-absent"
+        },
+        {
+          "id": "l1-h4",
+          "level": 1,
+          "hidden": true,
+          "probes": "delete-then-recreate"
+        },
+        {
+          "id": "l1-h5",
+          "level": 1,
+          "hidden": true,
+          "probes": "has-after-delete"
+        },
+        {
+          "id": "l2-v1",
+          "level": 2,
+          "hidden": false
+        },
+        {
+          "id": "l2-v2",
+          "level": 2,
+          "hidden": false
+        },
+        {
+          "id": "l2-h1",
+          "level": 2,
+          "hidden": true,
+          "probes": "record-absent"
+        },
+        {
+          "id": "l2-h2",
+          "level": 2,
+          "hidden": true,
+          "probes": "rank-empty"
+        },
+        {
+          "id": "l2-h3",
+          "level": 2,
+          "hidden": true,
+          "probes": "rank-fewer-than-n"
+        },
+        {
+          "id": "l2-h4",
+          "level": 2,
+          "hidden": true,
+          "probes": "rank-tiebreak-equal-totals"
+        },
+        {
+          "id": "l2-h5",
+          "level": 2,
+          "hidden": true,
+          "probes": "rank-n-zero"
+        },
+        {
+          "id": "l3-v1",
+          "level": 3,
+          "hidden": false
+        },
+        {
+          "id": "l3-v2",
+          "level": 3,
+          "hidden": false
+        },
+        {
+          "id": "l3-h1",
+          "level": 3,
+          "hidden": true,
+          "probes": "transfer-absent-source"
+        },
+        {
+          "id": "l3-h2",
+          "level": 3,
+          "hidden": true,
+          "probes": "transfer-absent-target"
+        },
+        {
+          "id": "l3-h3",
+          "level": 3,
+          "hidden": true,
+          "probes": "transfer-insufficient"
+        },
+        {
+          "id": "l3-h4",
+          "level": 3,
+          "hidden": true,
+          "probes": "transfer-exact-balance"
+        },
+        {
+          "id": "l3-h5",
+          "level": 3,
+          "hidden": true,
+          "probes": "transfer-into-self"
+        }
+      ],
+      "passed": false,
+      "brokenLevels": [],
+      "scoreAfter": 464,
+      "codeSnapshot": "class Ledger:\n    def __init__(self):\n        self.registry = []\n        self.registry_lookup = set()\n        self.record = dict()\n        self.createamt = dict()\n\n    def process(self, query):\n        operation, value , amount , transferamt = query\n\n        if operation == 'CREATE':\n            if value in self.registry_lookup:\n                return \"false\"\n            self.registry.append(value)\n            self.registry_lookup = set(self.registry)\n            self.record[value] = 0\n            if int(amount) > 0:\n                self.createamt[value] = int(amount)\n            return \"true\"\n        \n        if operation == 'GET':\n            for i in range(len(self.registry)):\n                if self.registry[i] == value:\n                    if value in self.createamt:\n                        return str(self.createamt[value])\n                    return str(i)\n            return \"\"\n\n        if operation == 'DELETE':\n            if value in self.registry_lookup:\n                self.registry.remove(value)\n                self.registry_lookup = set(self.registry)\n                self.record.pop(value, None)\n                self.createamt.pop(value,None)\n                return \"true\"\n            else:\n                return \"false\"\n\n        if operation == 'RECORD':\n            if value in self.record: \n                self.record[value] += int(amount)\n                return str(self.record[value])\n            return \"\"\n\n        if operation == 'TOP':\n            temp = dict(sorted(self.record.items() , key = lambda kv : (-kv[1], kv)))\n            res = ''\n            counter = 0\n            for k,v  in temp.items():\n                if v!= 0 and counter < int(value):\n                    res = res + k + '('+ str(v) + ')' \n                    res += ', '\n                    counter += 1\n            return res[:len(res)-2] if len(res) > 0 else \"\"\n\n        if operation == 'TRANSFER':\n            from_user = value\n            to_user = amount\n            dollars = int(transferamt)\n\n            if from_user not in self.registry_lookup:\n                return \"false\"\n            \n            if to_user not in self.registry_lookup:\n                return \"false\"\n\n            if from_user in self.createamt and self.createamt[from_user] >= dollars:\n                if to_user in self.createamt:\n                    self.createamt[to_user] += dollars \n                else:\n                    self.createamt[to_user] = dollars\n                self.createamt[from_user] = int(self.createamt[from_user]) - dollars\n                return \"true\"\n            \n            return \"false\"\n\n        else:\n            return \"false\"\n\n\ndef solution(queries):\n    ledger = Ledger()\n    results = []\n    for query in queries:\n        n = len(query)\n        while  n < 4:\n            query.append('-1')\n            n = len(query)\n        results.append( ledger.process(query))\n    return results\n\n\n\n"
+    },
+    {
+      "id": "mwn4th80-loxxg9",
+      "at": 1795067460720,
+      "level": 3,
+      "results": [
+        {
+          "testId": "l1-v1",
+          "status": "pass",
+          "actual": [
+            "true",
+            "0",
+            "false",
+            "true",
+            ""
+          ],
+          "expected": [
+            "true",
+            "0",
+            "false",
+            "true",
+            ""
+          ],
+          "failureReason": null,
+          "consoleOutput": "",
+          "errorText": null,
+          "durationMs": 1.4999999998508429
+        },
+        {
+          "testId": "l1-v2",
+          "status": "pass",
+          "actual": [
+            "true",
+            "false",
+            "0",
+            "true",
+            "",
+            "false"
+          ],
+          "expected": [
+            "true",
+            "false",
+            "0",
+            "true",
+            "",
+            "false"
+          ],
+          "failureReason": null,
+          "consoleOutput": "",
+          "errorText": null,
+          "durationMs": 1.3999999996485712
+        },
+        {
+          "testId": "l1-h1",
+          "status": "pass",
+          "actual": [
+            "true",
+            "false"
+          ],
+          "expected": [
+            "true",
+            "false"
+          ],
+          "failureReason": null,
+          "consoleOutput": "",
+          "errorText": null,
+          "durationMs": 1.0000000002037268
+        },
+        {
+          "testId": "l1-h2",
+          "status": "pass",
+          "actual": [
+            ""
+          ],
+          "expected": [
+            ""
+          ],
+          "failureReason": null,
+          "consoleOutput": "",
+          "errorText": null,
+          "durationMs": 1.099999999951251
+        },
+        {
+          "testId": "l1-h3",
+          "status": "pass",
+          "actual": [
+            "false"
+          ],
+          "expected": [
+            "false"
+          ],
+          "failureReason": null,
+          "consoleOutput": "",
+          "errorText": null,
+          "durationMs": 0.8000000002539309
+        },
+        {
+          "testId": "l1-h4",
+          "status": "pass",
+          "actual": [
+            "true",
+            "true",
+            "true"
+          ],
+          "expected": [
+            "true",
+            "true",
+            "true"
+          ],
+          "failureReason": null,
+          "consoleOutput": "",
+          "errorText": null,
+          "durationMs": 0.7999999997991836
+        },
+        {
+          "testId": "l1-h5",
+          "status": "pass",
+          "actual": [
+            "true",
+            "true",
+            ""
+          ],
+          "expected": [
+            "true",
+            "true",
+            ""
+          ],
+          "failureReason": null,
+          "consoleOutput": "",
+          "errorText": null,
+          "durationMs": 0.7999999997991836
+        },
+        {
+          "testId": "l2-v1",
+          "status": "pass",
+          "actual": [
+            "true",
+            "3",
+            "7",
+            "alice(7)"
+          ],
+          "expected": [
+            "true",
+            "3",
+            "7",
+            "alice(7)"
+          ],
+          "failureReason": null,
+          "consoleOutput": "",
+          "errorText": null,
+          "durationMs": 1.4999999998508429
+        },
+        {
+          "testId": "l2-v2",
+          "status": "pass",
+          "actual": [
+            "true",
+            "true",
+            "3",
+            "6",
+            "10",
+            "bob(10), alice(3)"
+          ],
+          "expected": [
+            "true",
+            "true",
+            "3",
+            "6",
+            "10",
+            "bob(10), alice(3)"
+          ],
+          "failureReason": null,
+          "consoleOutput": "",
+          "errorText": null,
+          "durationMs": 0.9000000000014552
+        },
+        {
+          "testId": "l2-h1",
+          "status": "pass",
+          "actual": [
+            ""
+          ],
+          "expected": [
+            ""
+          ],
+          "failureReason": null,
+          "consoleOutput": "",
+          "errorText": null,
+          "durationMs": 1.0000000002037268
+        },
+        {
+          "testId": "l2-h2",
+          "status": "pass",
+          "actual": [
+            ""
+          ],
+          "expected": [
+            ""
+          ],
+          "failureReason": null,
+          "consoleOutput": "",
+          "errorText": null,
+          "durationMs": 1.0000000002037268
+        },
+        {
+          "testId": "l2-h3",
+          "status": "pass",
+          "actual": [
+            "true",
+            "2",
+            "alice(2)"
+          ],
+          "expected": [
+            "true",
+            "2",
+            "alice(2)"
+          ],
+          "failureReason": null,
+          "consoleOutput": "",
+          "errorText": null,
+          "durationMs": 0.9999999997489795
+        },
+        {
+          "testId": "l2-h4",
+          "status": "pass",
+          "actual": [
+            "true",
+            "true",
+            "3",
+            "3",
+            "alice(3), bob(3)"
+          ],
+          "expected": [
+            "true",
+            "true",
+            "3",
+            "3",
+            "alice(3), bob(3)"
+          ],
+          "failureReason": null,
+          "consoleOutput": "",
+          "errorText": null,
+          "durationMs": 0.7000000000516593
+        },
+        {
+          "testId": "l2-h5",
+          "status": "pass",
+          "actual": [
+            "true",
+            "2",
+            ""
+          ],
+          "expected": [
+            "true",
+            "2",
+            ""
+          ],
+          "failureReason": null,
+          "consoleOutput": "",
+          "errorText": null,
+          "durationMs": 0.8000000002539309
+        },
+        {
+          "testId": "l3-v1",
+          "status": "pass",
+          "actual": [
+            "true",
+            "true",
+            "true",
+            "2"
+          ],
+          "expected": [
+            "true",
+            "true",
+            "true",
+            "2"
+          ],
+          "failureReason": null,
+          "consoleOutput": "",
+          "errorText": null,
+          "durationMs": 0.7999999997991836
+        },
+        {
+          "testId": "l3-v2",
+          "status": "pass",
+          "actual": [
+            "true",
+            "true",
+            "true",
+            "2",
+            "3",
+            "false"
+          ],
+          "expected": [
+            "true",
+            "true",
+            "true",
+            "2",
+            "3",
+            "false"
+          ],
+          "failureReason": null,
+          "consoleOutput": "",
+          "errorText": null,
+          "durationMs": 1.299999999901047
+        },
+        {
+          "testId": "l3-h1",
+          "status": "pass",
+          "actual": [
+            "true",
+            "false"
+          ],
+          "expected": [
+            "true",
+            "false"
+          ],
+          "failureReason": null,
+          "consoleOutput": "",
+          "errorText": null,
+          "durationMs": 0.7999999997991836
+        },
+        {
+          "testId": "l3-h2",
+          "status": "pass",
+          "actual": [
+            "true",
+            "false"
+          ],
+          "expected": [
+            "true",
+            "false"
+          ],
+          "failureReason": null,
+          "consoleOutput": "",
+          "errorText": null,
+          "durationMs": 0.7999999997991836
+        },
+        {
+          "testId": "l3-h3",
+          "status": "pass",
+          "actual": [
+            "true",
+            "true",
+            "false"
+          ],
+          "expected": [
+            "true",
+            "true",
+            "false"
+          ],
+          "failureReason": null,
+          "consoleOutput": "",
+          "errorText": null,
+          "durationMs": 0.8000000002539309
+        },
+        {
+          "testId": "l3-h4",
+          "status": "pass",
+          "actual": [
+            "true",
+            "true",
+            "true",
+            "0",
+            "3"
+          ],
+          "expected": [
+            "true",
+            "true",
+            "true",
+            "0",
+            "3"
+          ],
+          "failureReason": null,
+          "consoleOutput": "",
+          "errorText": null,
+          "durationMs": 0.600000000304135
+        },
+        {
+          "testId": "l3-h5",
+          "status": "pass",
+          "actual": [
+            "true",
+            "false"
+          ],
+          "expected": [
+            "true",
+            "false"
+          ],
+          "failureReason": null,
+          "consoleOutput": "",
+          "errorText": null,
+          "durationMs": 0.7999999997991836
+        }
+      ],
+      "tests": [
+        {
+          "id": "l1-v1",
+          "level": 1,
+          "hidden": false
+        },
+        {
+          "id": "l1-v2",
+          "level": 1,
+          "hidden": false
+        },
+        {
+          "id": "l1-h1",
+          "level": 1,
+          "hidden": true,
+          "probes": "create-duplicate"
+        },
+        {
+          "id": "l1-h2",
+          "level": 1,
+          "hidden": true,
+          "probes": "has-absent"
+        },
+        {
+          "id": "l1-h3",
+          "level": 1,
+          "hidden": true,
+          "probes": "delete-absent"
+        },
+        {
+          "id": "l1-h4",
+          "level": 1,
+          "hidden": true,
+          "probes": "delete-then-recreate"
+        },
+        {
+          "id": "l1-h5",
+          "level": 1,
+          "hidden": true,
+          "probes": "has-after-delete"
+        },
+        {
+          "id": "l2-v1",
+          "level": 2,
+          "hidden": false
+        },
+        {
+          "id": "l2-v2",
+          "level": 2,
+          "hidden": false
+        },
+        {
+          "id": "l2-h1",
+          "level": 2,
+          "hidden": true,
+          "probes": "record-absent"
+        },
+        {
+          "id": "l2-h2",
+          "level": 2,
+          "hidden": true,
+          "probes": "rank-empty"
+        },
+        {
+          "id": "l2-h3",
+          "level": 2,
+          "hidden": true,
+          "probes": "rank-fewer-than-n"
+        },
+        {
+          "id": "l2-h4",
+          "level": 2,
+          "hidden": true,
+          "probes": "rank-tiebreak-equal-totals"
+        },
+        {
+          "id": "l2-h5",
+          "level": 2,
+          "hidden": true,
+          "probes": "rank-n-zero"
+        },
+        {
+          "id": "l3-v1",
+          "level": 3,
+          "hidden": false
+        },
+        {
+          "id": "l3-v2",
+          "level": 3,
+          "hidden": false
+        },
+        {
+          "id": "l3-h1",
+          "level": 3,
+          "hidden": true,
+          "probes": "transfer-absent-source"
+        },
+        {
+          "id": "l3-h2",
+          "level": 3,
+          "hidden": true,
+          "probes": "transfer-absent-target"
+        },
+        {
+          "id": "l3-h3",
+          "level": 3,
+          "hidden": true,
+          "probes": "transfer-insufficient"
+        },
+        {
+          "id": "l3-h4",
+          "level": 3,
+          "hidden": true,
+          "probes": "transfer-exact-balance"
+        },
+        {
+          "id": "l3-h5",
+          "level": 3,
+          "hidden": true,
+          "probes": "transfer-into-self"
+        }
+      ],
+      "passed": true,
+      "brokenLevels": [],
+      "scoreAfter": 500,
+      "codeSnapshot": "class Ledger:\n    def __init__(self):\n        self.registry = []\n        self.registry_lookup = set()\n        self.record = dict()\n        self.createamt = dict()\n\n    def process(self, query):\n        operation, value , amount , transferamt = query\n\n        if operation == 'CREATE':\n            if value in self.registry_lookup:\n                return \"false\"\n            self.registry.append(value)\n            self.registry_lookup = set(self.registry)\n            self.record[value] = 0\n            if int(amount) > 0:\n                self.createamt[value] = int(amount)\n            return \"true\"\n        \n        if operation == 'GET':\n            for i in range(len(self.registry)):\n                if self.registry[i] == value:\n                    if value in self.createamt:\n                        return str(self.createamt[value])\n                    return str(i)\n            return \"\"\n\n        if operation == 'DELETE':\n            if value in self.registry_lookup:\n                self.registry.remove(value)\n                self.registry_lookup = set(self.registry)\n                self.record.pop(value, None)\n                self.createamt.pop(value,None)\n                return \"true\"\n            else:\n                return \"false\"\n\n        if operation == 'RECORD':\n            if value in self.record: \n                self.record[value] += int(amount)\n                return str(self.record[value])\n            return \"\"\n\n        if operation == 'TOP':\n            temp = dict(sorted(self.record.items() , key = lambda kv : (-kv[1], kv)))\n            res = ''\n            counter = 0\n            for k,v  in temp.items():\n                if v!= 0 and counter < int(value):\n                    res = res + k + '('+ str(v) + ')' \n                    res += ', '\n                    counter += 1\n            return res[:len(res)-2] if len(res) > 0 else \"\"\n\n        if operation == 'TRANSFER':\n            from_user = value\n            to_user = amount\n            dollars = int(transferamt)\n\n            if from_user == to_user:\n                return \"false\"\n            if from_user not in self.registry_lookup:\n                return \"false\"\n            \n            if to_user not in self.registry_lookup:\n                return \"false\"\n\n            if from_user in self.createamt and self.createamt[from_user] >= dollars:\n                if to_user in self.createamt:\n                    self.createamt[to_user] += dollars \n                else:\n                    self.createamt[to_user] = dollars\n                self.createamt[from_user] = int(self.createamt[from_user]) - dollars\n                return \"true\"\n            \n            return \"false\"\n\n        else:\n            return \"false\"\n\n\ndef solution(queries):\n    ledger = Ledger()\n    results = []\n    for query in queries:\n        n = len(query)\n        while  n < 4:\n            query.append('-1')\n            n = len(query)\n        results.append( ledger.process(query))\n    return results\n\n\n\n"
+    },
+    {
+      "id": "mwn5bk1n-ngaqol",
+      "at": 1795068304186,
+      "level": 4,
+      "results": [
+        {
+          "testId": "l1-v1",
+          "status": "pass",
+          "actual": [
+            "true",
+            "0",
+            "false",
+            "true",
+            ""
+          ],
+          "expected": [
+            "true",
+            "0",
+            "false",
+            "true",
+            ""
+          ],
+          "failureReason": null,
+          "consoleOutput": "",
+          "errorText": null,
+          "durationMs": 1.4999999993960955
+        },
+        {
+          "testId": "l1-v2",
+          "status": "pass",
+          "actual": [
+            "true",
+            "false",
+            "0",
+            "true",
+            "",
+            "false"
+          ],
+          "expected": [
+            "true",
+            "false",
+            "0",
+            "true",
+            "",
+            "false"
+          ],
+          "failureReason": null,
+          "consoleOutput": "",
+          "errorText": null,
+          "durationMs": 1.4000000001033186
+        },
+        {
+          "testId": "l1-h1",
+          "status": "pass",
+          "actual": [
+            "true",
+            "false"
+          ],
+          "expected": [
+            "true",
+            "false"
+          ],
+          "failureReason": null,
+          "consoleOutput": "",
+          "errorText": null,
+          "durationMs": 1.0999999994965037
+        },
+        {
+          "testId": "l1-h2",
+          "status": "pass",
+          "actual": [
+            ""
+          ],
+          "expected": [
+            ""
+          ],
+          "failureReason": null,
+          "consoleOutput": "",
+          "errorText": null,
+          "durationMs": 0.9000000000014552
+        },
+        {
+          "testId": "l1-h3",
+          "status": "pass",
+          "actual": [
+            "false"
+          ],
+          "expected": [
+            "false"
+          ],
+          "failureReason": null,
+          "consoleOutput": "",
+          "errorText": null,
+          "durationMs": 1.20000000060827
+        },
+        {
+          "testId": "l1-h4",
+          "status": "pass",
+          "actual": [
+            "true",
+            "true",
+            "true"
+          ],
+          "expected": [
+            "true",
+            "true",
+            "true"
+          ],
+          "failureReason": null,
+          "consoleOutput": "",
+          "errorText": null,
+          "durationMs": 0.7999999997991836
+        },
+        {
+          "testId": "l1-h5",
+          "status": "pass",
+          "actual": [
+            "true",
+            "true",
+            ""
+          ],
+          "expected": [
+            "true",
+            "true",
+            ""
+          ],
+          "failureReason": null,
+          "consoleOutput": "",
+          "errorText": null,
+          "durationMs": 1.0000000002037268
+        },
+        {
+          "testId": "l2-v1",
+          "status": "pass",
+          "actual": [
+            "true",
+            "3",
+            "7",
+            "alice(7)"
+          ],
+          "expected": [
+            "true",
+            "3",
+            "7",
+            "alice(7)"
+          ],
+          "failureReason": null,
+          "consoleOutput": "",
+          "errorText": null,
+          "durationMs": 0.7999999997991836
+        },
+        {
+          "testId": "l2-v2",
+          "status": "pass",
+          "actual": [
+            "true",
+            "true",
+            "3",
+            "6",
+            "10",
+            "bob(10), alice(3)"
+          ],
+          "expected": [
+            "true",
+            "true",
+            "3",
+            "6",
+            "10",
+            "bob(10), alice(3)"
+          ],
+          "failureReason": null,
+          "consoleOutput": "",
+          "errorText": null,
+          "durationMs": 0.7000000005064066
+        },
+        {
+          "testId": "l2-h1",
+          "status": "pass",
+          "actual": [
+            ""
+          ],
+          "expected": [
+            ""
+          ],
+          "failureReason": null,
+          "consoleOutput": "",
+          "errorText": null,
+          "durationMs": 0.600000000304135
+        },
+        {
+          "testId": "l2-h2",
+          "status": "pass",
+          "actual": [
+            ""
+          ],
+          "expected": [
+            ""
+          ],
+          "failureReason": null,
+          "consoleOutput": "",
+          "errorText": null,
+          "durationMs": 0.9000000000014552
+        },
+        {
+          "testId": "l2-h3",
+          "status": "pass",
+          "actual": [
+            "true",
+            "2",
+            "alice(2)"
+          ],
+          "expected": [
+            "true",
+            "2",
+            "alice(2)"
+          ],
+          "failureReason": null,
+          "consoleOutput": "",
+          "errorText": null,
+          "durationMs": 0.9000000000014552
+        },
+        {
+          "testId": "l2-h4",
+          "status": "pass",
+          "actual": [
+            "true",
+            "true",
+            "3",
+            "3",
+            "alice(3), bob(3)"
+          ],
+          "expected": [
+            "true",
+            "true",
+            "3",
+            "3",
+            "alice(3), bob(3)"
+          ],
+          "failureReason": null,
+          "consoleOutput": "",
+          "errorText": null,
+          "durationMs": 0.7999999997991836
+        },
+        {
+          "testId": "l2-h5",
+          "status": "pass",
+          "actual": [
+            "true",
+            "2",
+            ""
+          ],
+          "expected": [
+            "true",
+            "2",
+            ""
+          ],
+          "failureReason": null,
+          "consoleOutput": "",
+          "errorText": null,
+          "durationMs": 0.9000000000014552
+        },
+        {
+          "testId": "l3-v1",
+          "status": "pass",
+          "actual": [
+            "true",
+            "true",
+            "true",
+            "2"
+          ],
+          "expected": [
+            "true",
+            "true",
+            "true",
+            "2"
+          ],
+          "failureReason": null,
+          "consoleOutput": "",
+          "errorText": null,
+          "durationMs": 1.0000000002037268
+        },
+        {
+          "testId": "l3-v2",
+          "status": "pass",
+          "actual": [
+            "true",
+            "true",
+            "true",
+            "2",
+            "3",
+            "false"
+          ],
+          "expected": [
+            "true",
+            "true",
+            "true",
+            "2",
+            "3",
+            "false"
+          ],
+          "failureReason": null,
+          "consoleOutput": "",
+          "errorText": null,
+          "durationMs": 0.8000000007086783
+        },
+        {
+          "testId": "l3-h1",
+          "status": "pass",
+          "actual": [
+            "true",
+            "false"
+          ],
+          "expected": [
+            "true",
+            "false"
+          ],
+          "failureReason": null,
+          "consoleOutput": "",
+          "errorText": null,
+          "durationMs": 0.7000000005064066
+        },
+        {
+          "testId": "l3-h2",
+          "status": "pass",
+          "actual": [
+            "true",
+            "false"
+          ],
+          "expected": [
+            "true",
+            "false"
+          ],
+          "failureReason": null,
+          "consoleOutput": "",
+          "errorText": null,
+          "durationMs": 0.9000000000014552
+        },
+        {
+          "testId": "l3-h3",
+          "status": "pass",
+          "actual": [
+            "true",
+            "true",
+            "false"
+          ],
+          "expected": [
+            "true",
+            "true",
+            "false"
+          ],
+          "failureReason": null,
+          "consoleOutput": "",
+          "errorText": null,
+          "durationMs": 0.7999999997991836
+        },
+        {
+          "testId": "l3-h4",
+          "status": "pass",
+          "actual": [
+            "true",
+            "true",
+            "true",
+            "0",
+            "3"
+          ],
+          "expected": [
+            "true",
+            "true",
+            "true",
+            "0",
+            "3"
+          ],
+          "failureReason": null,
+          "consoleOutput": "",
+          "errorText": null,
+          "durationMs": 0.7000000005064066
+        },
+        {
+          "testId": "l3-h5",
+          "status": "pass",
+          "actual": [
+            "true",
+            "false"
+          ],
+          "expected": [
+            "true",
+            "false"
+          ],
+          "failureReason": null,
+          "consoleOutput": "",
+          "errorText": null,
+          "durationMs": 0.7999999997991836
+        },
+        {
+          "testId": "l4-v1",
+          "status": "fail",
+          "actual": [
+            "false",
+            "false",
+            "false"
+          ],
+          "expected": [
+            "true",
+            "true",
+            "true"
+          ],
+          "failureReason": {
+            "kind": "value",
+            "index": 0
+          },
+          "consoleOutput": "",
+          "errorText": null,
+          "durationMs": 0.7999999997991836
+        },
+        {
+          "testId": "l4-v2",
+          "status": "fail",
+          "actual": [
+            "false",
+            "false",
+            "false",
+            "false"
+          ],
+          "expected": [
+            "true",
+            "true",
+            "true",
+            "true"
+          ],
+          "failureReason": {
+            "kind": "value",
+            "index": 0
+          },
+          "consoleOutput": "",
+          "errorText": null,
+          "durationMs": 1.0000000002037268
+        },
+        {
+          "testId": "l4-h1",
+          "status": "fail",
+          "actual": [
+            "false",
+            "false"
+          ],
+          "expected": [
+            "true",
+            "true"
+          ],
+          "failureReason": {
+            "kind": "value",
+            "index": 0
+          },
+          "consoleOutput": "",
+          "errorText": null,
+          "durationMs": 0.9000000000014552
+        },
+        {
+          "testId": "l4-h2",
+          "status": "fail",
+          "actual": [
+            "false",
+            "false",
+            "false"
+          ],
+          "expected": [
+            "true",
+            "true",
+            "true"
+          ],
+          "failureReason": {
+            "kind": "value",
+            "index": 0
+          },
+          "consoleOutput": "",
+          "errorText": null,
+          "durationMs": 0.7000000005064066
+        },
+        {
+          "testId": "l4-h3",
+          "status": "fail",
+          "actual": [
+            "false",
+            "false",
+            "false"
+          ],
+          "expected": [
+            "true",
+            "true",
+            "true"
+          ],
+          "failureReason": {
+            "kind": "value",
+            "index": 0
+          },
+          "consoleOutput": "",
+          "errorText": null,
+          "durationMs": 0.699999999596912
+        },
+        {
+          "testId": "l4-h4",
+          "status": "fail",
+          "actual": [
+            "false",
+            "false",
+            "false"
+          ],
+          "expected": [
+            "true",
+            "true",
+            "true"
+          ],
+          "failureReason": {
+            "kind": "value",
+            "index": 0
+          },
+          "consoleOutput": "",
+          "errorText": null,
+          "durationMs": 0.7999999997991836
+        },
+        {
+          "testId": "l4-h5",
+          "status": "fail",
+          "actual": [
+            "false",
+            "false",
+            "false"
+          ],
+          "expected": [
+            "true",
+            "true",
+            "true"
+          ],
+          "failureReason": {
+            "kind": "value",
+            "index": 0
+          },
+          "consoleOutput": "",
+          "errorText": null,
+          "durationMs": 0.7999999997991836
+        }
+      ],
+      "tests": [
+        {
+          "id": "l1-v1",
+          "level": 1,
+          "hidden": false
+        },
+        {
+          "id": "l1-v2",
+          "level": 1,
+          "hidden": false
+        },
+        {
+          "id": "l1-h1",
+          "level": 1,
+          "hidden": true,
+          "probes": "create-duplicate"
+        },
+        {
+          "id": "l1-h2",
+          "level": 1,
+          "hidden": true,
+          "probes": "has-absent"
+        },
+        {
+          "id": "l1-h3",
+          "level": 1,
+          "hidden": true,
+          "probes": "delete-absent"
+        },
+        {
+          "id": "l1-h4",
+          "level": 1,
+          "hidden": true,
+          "probes": "delete-then-recreate"
+        },
+        {
+          "id": "l1-h5",
+          "level": 1,
+          "hidden": true,
+          "probes": "has-after-delete"
+        },
+        {
+          "id": "l2-v1",
+          "level": 2,
+          "hidden": false
+        },
+        {
+          "id": "l2-v2",
+          "level": 2,
+          "hidden": false
+        },
+        {
+          "id": "l2-h1",
+          "level": 2,
+          "hidden": true,
+          "probes": "record-absent"
+        },
+        {
+          "id": "l2-h2",
+          "level": 2,
+          "hidden": true,
+          "probes": "rank-empty"
+        },
+        {
+          "id": "l2-h3",
+          "level": 2,
+          "hidden": true,
+          "probes": "rank-fewer-than-n"
+        },
+        {
+          "id": "l2-h4",
+          "level": 2,
+          "hidden": true,
+          "probes": "rank-tiebreak-equal-totals"
+        },
+        {
+          "id": "l2-h5",
+          "level": 2,
+          "hidden": true,
+          "probes": "rank-n-zero"
+        },
+        {
+          "id": "l3-v1",
+          "level": 3,
+          "hidden": false
+        },
+        {
+          "id": "l3-v2",
+          "level": 3,
+          "hidden": false
+        },
+        {
+          "id": "l3-h1",
+          "level": 3,
+          "hidden": true,
+          "probes": "transfer-absent-source"
+        },
+        {
+          "id": "l3-h2",
+          "level": 3,
+          "hidden": true,
+          "probes": "transfer-absent-target"
+        },
+        {
+          "id": "l3-h3",
+          "level": 3,
+          "hidden": true,
+          "probes": "transfer-insufficient"
+        },
+        {
+          "id": "l3-h4",
+          "level": 3,
+          "hidden": true,
+          "probes": "transfer-exact-balance"
+        },
+        {
+          "id": "l3-h5",
+          "level": 3,
+          "hidden": true,
+          "probes": "transfer-into-self"
+        },
+        {
+          "id": "l4-v1",
+          "level": 4,
+          "hidden": false
+        },
+        {
+          "id": "l4-v2",
+          "level": 4,
+          "hidden": false
+        },
+        {
+          "id": "l4-h1",
+          "level": 4,
+          "hidden": true,
+          "probes": "rate-within-limit"
+        },
+        {
+          "id": "l4-h2",
+          "level": 4,
+          "hidden": true,
+          "probes": "rate-exceeds-limit"
+        },
+        {
+          "id": "l4-h3",
+          "level": 4,
+          "hidden": true,
+          "probes": "rate-window-slides"
+        },
+        {
+          "id": "l4-h4",
+          "level": 4,
+          "hidden": true,
+          "probes": "rate-independent-keys"
+        },
+        {
+          "id": "l4-h5",
+          "level": 4,
+          "hidden": true,
+          "probes": "rate-boundary-exactly-window"
+        }
+      ],
+      "passed": false,
+      "brokenLevels": [],
+      "scoreAfter": 500,
+      "codeSnapshot": "class Ledger:\n    def __init__(self):\n        self.registry = []\n        self.registry_lookup = set()\n        self.record = dict()\n        self.createamt = dict()\n\n    def process(self, query):\n        operation, *args = query\n\n        if operation == 'CREATE':\n            value = args[0]\n            amount = args[1] if len(args) > 1 else '-1'\n\n            if value in self.registry_lookup:\n                return \"false\"\n            self.registry.append(value)\n            self.registry_lookup = set(self.registry)\n            self.record[value] = 0\n            if int(amount) > 0:\n                self.createamt[value] = int(amount)\n            return \"true\"\n\n        if operation == 'GET':\n            value = args[0]\n\n            for i in range(len(self.registry)):\n                if self.registry[i] == value:\n                    if value in self.createamt:\n                        return str(self.createamt[value])\n                    return str(i)\n            return \"\"\n\n        if operation == 'DELETE':\n            value = args[0]\n\n            if value in self.registry_lookup:\n                self.registry.remove(value)\n                self.registry_lookup = set(self.registry)\n                self.record.pop(value, None)\n                self.createamt.pop(value, None)\n                return \"true\"\n            else:\n                return \"false\"\n\n        if operation == 'RECORD':\n            value, amount = args\n\n            if value in self.record:\n                self.record[value] += int(amount)\n                return str(self.record[value])\n            return \"\"\n\n        if operation == 'TOP':\n            value = args[0]\n\n            temp = dict(sorted(self.record.items(), key=lambda kv: (-kv[1], kv)))\n            res = ''\n            counter = 0\n            for k, v in temp.items():\n                if v != 0 and counter < int(value):\n                    res = res + k + '(' + str(v) + ')'\n                    res += ', '\n                    counter += 1\n            return res[:len(res) - 2] if len(res) > 0 else \"\"\n\n        if operation == 'TRANSFER':\n            from_user, to_user, transferamt = args\n            dollars = int(transferamt)\n\n            if from_user == to_user:\n                return \"false\"\n            if from_user not in self.registry_lookup:\n                return \"false\"\n\n            if to_user not in self.registry_lookup:\n                return \"false\"\n\n            if from_user in self.createamt and self.createamt[from_user] >= dollars:\n                if to_user in self.createamt:\n                    self.createamt[to_user] += dollars\n                else:\n                    self.createamt[to_user] = dollars\n                self.createamt[from_user] = int(self.createamt[from_user]) - dollars\n                return \"true\"\n\n            return \"false\"\n\n        else:\n            return \"false\"\n\n\ndef solution(queries):\n    ledger = Ledger()\n    results = []\n    for query in queries:\n        results.append(ledger.process(query))\n    return results"
+    }
+  ],
+  "runCount": 34,
+  "score": 500,
+  "totalWeight": 800,
+  "level1PassSnapshot": "class Ledger:\n    def __init__(self):\n        self.registry = []\n        self.registry_lookup = set()\n\n    def process(self, query):\n        operation, value = query\n\n        if operation == 'CREATE':\n            if value in self.registry_lookup:\n                return \"false\"\n            self.registry.append(value)\n            self.registry_lookup = set(self.registry)\n            return \"true\"\n        \n        if operation == 'GET':\n            for i in range(len(self.registry)):\n                if self.registry[i] == value:\n                    return str(i)\n            return \"\"\n\n        if operation == 'DELETE':\n            if value in self.registry_lookup:\n                self.registry.remove(value)\n                self.registry_lookup = set(self.registry)\n                return \"true\"\n            else:\n                return \"false\"\n\n        else:\n            return \"false\"\n\n\ndef solution(queries):\n    ledger = Ledger()\n    results = []\n    for query in queries:\n        results.append( ledger.process(query))\n    return results\n\n\n\n",
+  "endedAt": 1795069422332,
+  "endedReason": "expired"
+}

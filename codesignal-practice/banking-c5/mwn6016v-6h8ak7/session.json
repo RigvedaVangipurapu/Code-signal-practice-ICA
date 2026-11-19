@@ -1,0 +1,22 @@
+{
+  "id": "mwn6016v-6h8ak7",
+  "taskId": "banking-c5",
+  "status": "ended",
+  "startedAt": 1795069446150,
+  "timeLimitMs": 5400000,
+  "code": "def solution(queries):\n    results = []\n    for query in queries:\n        pass\n    return results\n",
+  "currentLevel": 1,
+  "unlockedLevel": 1,
+  "levelTimes": {
+    "1": {
+      "unlockedAt": 1795069446150
+    }
+  },
+  "bestPerLevel": {},
+  "submits": [],
+  "runCount": 0,
+  "score": 0,
+  "totalWeight": 800,
+  "endedAt": 1795069456104,
+  "endedReason": "abandoned"
+}

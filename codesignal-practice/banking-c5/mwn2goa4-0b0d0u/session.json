@@ -1,0 +1,22 @@
+{
+  "id": "mwn2goa4-0b0d0u",
+  "taskId": "banking-c5",
+  "status": "ended",
+  "startedAt": 1795063504108,
+  "timeLimitMs": 5400000,
+  "code": "def solution(queries):\n\n    operation, value = queries\n    self.registry = []\n    self.registry_lookup = set()\n\n    if operation == 'CREATE':\n        if value in registry_lookup:\n            return \"false\"\n        registry.append(value)\n        registry_lookup = set(registry)\n        return \"true\"\n    \n    if operation == 'GET':\n        for i in range(len(registry)):\n            if registry[i] == value:\n                return str(i)\n        return \"\"\n\n    if operation == 'DELETE':\n        if value in registry_lookup:\n            registry.remove(value)\n            registry_lookup = set(registry)\n            return \"true\"\n        else:\n            return \"false\"\n\n    else:\n        return \"false\"\n\n\n    results = []\n    for query in queries:\n        results.append(solution(query))\n    return results\n",
+  "currentLevel": 1,
+  "unlockedLevel": 1,
+  "levelTimes": {
+    "1": {
+      "unlockedAt": 1795063504108
+    }
+  },
+  "bestPerLevel": {},
+  "submits": [],
+  "runCount": 7,
+  "score": 0,
+  "totalWeight": 800,
+  "endedAt": 1795064015849,
+  "endedReason": "abandoned"
+}
