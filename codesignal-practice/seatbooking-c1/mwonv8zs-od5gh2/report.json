@@ -1,0 +1,160 @@
+{
+  "score": 800,
+  "totalWeight": 800,
+  "levelScores": [
+    {
+      "level": 1,
+      "points": 100,
+      "weight": 100,
+      "passed": true
+    },
+    {
+      "level": 2,
+      "points": 150,
+      "weight": 150,
+      "passed": true
+    },
+    {
+      "level": 3,
+      "points": 250,
+      "weight": 250,
+      "passed": true
+    },
+    {
+      "level": 4,
+      "points": 300,
+      "weight": 300,
+      "passed": true
+    }
+  ],
+  "timePerLevel": [
+    {
+      "level": 1,
+      "ms": 648721,
+      "budgetMs": 600000,
+      "passed": true,
+      "reached": true
+    },
+    {
+      "level": 2,
+      "ms": 728109,
+      "budgetMs": 1200000,
+      "passed": true,
+      "reached": true
+    },
+    {
+      "level": 3,
+      "ms": 761276,
+      "budgetMs": 1500000,
+      "passed": true,
+      "reached": true
+    },
+    {
+      "level": 4,
+      "ms": 1412028,
+      "budgetMs": 2100000,
+      "passed": true,
+      "reached": true
+    }
+  ],
+  "timeline": {
+    "durationMs": 3550135,
+    "markers": [
+      {
+        "at": 1795160570969,
+        "offsetMs": 648721,
+        "level": 1,
+        "passRate": 1,
+        "passed": true,
+        "failureClass": null
+      },
+      {
+        "at": 1795161299078,
+        "offsetMs": 1376830,
+        "level": 2,
+        "passRate": 1,
+        "passed": true,
+        "failureClass": null
+      },
+      {
+        "at": 1795162013514,
+        "offsetMs": 2091266,
+        "level": 3,
+        "passRate": 0.9047619047619048,
+        "passed": false,
+        "failureClass": "regression"
+      },
+      {
+        "at": 1795162060354,
+        "offsetMs": 2138106,
+        "level": 3,
+        "passRate": 1,
+        "passed": true,
+        "failureClass": null
+      },
+      {
+        "at": 1795163449968,
+        "offsetMs": 3527720,
+        "level": 4,
+        "passRate": 0.9642857142857143,
+        "passed": false,
+        "failureClass": "edge-case"
+      },
+      {
+        "at": 1795163472382,
+        "offsetMs": 3550134,
+        "level": 4,
+        "passRate": 1,
+        "passed": true,
+        "failureClass": null
+      }
+    ],
+    "longestGapMs": 1389614,
+    "longestGapAfter": 1795162060354
+  },
+  "refactor": {
+    "available": true,
+    "baseLines": 47,
+    "changedLines": 3,
+    "finalLines": 167
+  },
+  "sessionFailures": {
+    "counts": {
+      "regression": 1,
+      "timeout": 0,
+      "crash": 0,
+      "edge-case": 1,
+      "wrong-type": 0,
+      "length": 0,
+      "wrong-logic": 0
+    },
+    "total": 2
+  },
+  "allFailures": {
+    "counts": {
+      "regression": 1,
+      "timeout": 0,
+      "crash": 0,
+      "edge-case": 1,
+      "wrong-type": 0,
+      "length": 0,
+      "wrong-logic": 0
+    },
+    "total": 2
+  },
+  "sessionProbes": [
+    {
+      "probe": "cancel-after-fire-fails",
+      "failed": 1,
+      "sessions": 1
+    }
+  ],
+  "allProbes": [
+    {
+      "probe": "cancel-after-fire-fails",
+      "failed": 1,
+      "sessions": 1
+    }
+  ],
+  "attemptCount": 1
+}

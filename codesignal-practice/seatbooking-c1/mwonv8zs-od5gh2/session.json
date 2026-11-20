@@ -1,0 +1,2986 @@
+{
+  "id": "mwonv8zs-od5gh2",
+  "taskId": "seatbooking-c1",
+  "status": "ended",
+  "startedAt": 1795159922248,
+  "timeLimitMs": 5400000,
+  "code": "from collections import defaultdict\nclass Seat:\n    def __init__(self):\n        self.seatdetails = defaultdict(list)\n        self.seatlist = []\n        self.updatetime = 0\n        self.schedulemap = defaultdict(list)\n\n    def booking(self, query):\n        operation, *args = query\n\n\n\n        #  create operation  ---------------------------------------------\n        if operation == 'CREATE':\n            sno = args[0]\n            amount = int(args[1]) if len(args) > 1 else -1\n            \n            if sno not in self.seatlist:\n                self.seatdetails[sno] = [self.updatetime, amount]\n                self.seatlist.append(sno)\n                self.updatetime += 1\n                return \"true\"\n            \n            else:\n                return \"false\"\n\n        #  get operation  ---------------------------------------------       \n        if operation == 'GET':\n            sno = args[0]\n\n            if sno not in self.seatlist:\n                return \"\"\n            \n            return str(self.seatlist.index(sno)) if self.seatdetails[sno][1] < 0 else str(self.seatdetails[sno][1])\n\n        \n        #  delete operation  ---------------------------------------------\n        if operation == 'DELETE':\n            sno = args[0]\n\n            if sno not in self.seatlist:\n                return \"false\"\n\n            self.seatlist.remove(sno)\n            self.seatdetails.pop(sno, None)\n            return \"true\"\n\n\n        #  recent operation  ---------------------------------------------\n        if operation == 'RECENT':\n            k = int(args[0])\n            temp = defaultdict(int)\n            for sno, attr in self.seatdetails.items():\n                timestamp = attr[0]\n                temp[sno] = timestamp\n            \n            temp = sorted(temp, key=lambda k: (-temp[k], k))\n\n            ans = ', '.join(temp[:k])\n            return ans\n\n\n        #  transfer operation  ---------------------------------------------\n        if operation == 'TRANSFER':\n                fromseat = args[0]\n                toseat = args[1]\n                amount = int(args[2])\n\n                if fromseat not in self.seatlist:\n                    return \"false\"\n\n                if toseat not in self.seatlist:\n                    return \"false\"\n\n                if fromseat == toseat:\n                    return \"false\"\n\n                frommoney = self.seatdetails[fromseat][1]\n                tomoney = self.seatdetails[toseat][1]\n\n                if frommoney < amount:\n                    return \"false\"\n\n                self.seatdetails[fromseat][1] = frommoney - amount\n                self.seatdetails[toseat][1] = tomoney + amount\n                return \"true\"\n\n        #  schedule operation  ---------------------------------------------\n        if operation == 'SCHEDULE':\n            schedule_time = int(args[0])\n            exec_time = int(args[1])\n            sno = args[2]\n            amount = int(args[3])\n\n            if schedule_time > exec_time:\n                return \"false\"\n\n            if sno not in self.seatlist:\n                self.seatdetails[sno] = [exec_time, amount]\n                self.seatlist.append(sno)\n                self.updatetime += exec_time + 1\n                schedulevar =  \"sch\"+str(schedule_time)\n                self.schedulemap[schedulevar] = [sno,schedule_time]\n                return schedulevar\n            \n            else:\n                return \"false\"\n\n        #  get at operation  ---------------------------------------------\n        if operation == 'GET_AT':\n            exec_time = int(args[0])\n            sno = args[1]\n\n            if sno not in self.seatlist or self.seatdetails[sno][0] > exec_time:\n                return \"\"\n            \n            return str(self.seatlist.index(sno)) if self.seatdetails[sno][1] < 0 else str(self.seatdetails[sno][1])        \n        \n        \n        \n        #  cancel operation  ---------------------------------------------\n        if operation == 'CANCEL':\n            exec_time = int(args[0])\n            schedule_var = args[1]\n\n            if schedule_var not in self.schedulemap:\n                return \"false\"\n\n            sno = self.schedulemap[schedule_var][0]\n\n            if sno not in self.seatlist:\n                return false\n\n            create_exec_time = self.seatdetails[sno][0]\n            create_schedule_time = self.schedulemap[schedule_var][1]\n\n            if exec_time > create_schedule_time and exec_time < create_exec_time:\n                if sno not in self.seatlist:\n                    return \"false\"\n\n                self.seatlist.remove(sno)\n                self.seatdetails.pop(sno, None)\n                self.schedulemap.pop(schedule_var, None)\n                return \"true\"\n            \n            else:\n                return \"false\"\n\n\n\n        \n\n            \n\n\n        \n\n\n\ndef solution(queries):\n    results = []\n    seat = Seat()\n    for query in queries:\n        results.append(seat.booking(query))\n    return results\n",
+  "currentLevel": 4,
+  "unlockedLevel": 4,
+  "levelTimes": {
+    "1": {
+      "unlockedAt": 1795159922248,
+      "passedAt": 1795160570969
+    },
+    "2": {
+      "unlockedAt": 1795160570969,
+      "passedAt": 1795161299078
+    },
+    "3": {
+      "unlockedAt": 1795161299078,
+      "passedAt": 1795162060354
+    },
+    "4": {
+      "unlockedAt": 1795162060354,
+      "passedAt": 1795163472382
+    }
+  },
+  "bestPerLevel": {
+    "1": {
+      "passed": 7,
+      "total": 7
+    },
+    "2": {
+      "passed": 7,
+      "total": 7
+    },
+    "3": {
+      "passed": 7,
+      "total": 7
+    },
+    "4": {
+      "passed": 7,
+      "total": 7
+    }
+  },
+  "submits": [
+    {
+      "id": "mwoo95jt-dgvnn8",
+      "at": 1795160570969,
+      "level": 1,
+      "results": [
+        {
+          "testId": "l1-v1",
+          "status": "pass",
+          "actual": [
+            "true",
+            "0",
+            "false",
+            "true",
+            ""
+          ],
+          "expected": [
+            "true",
+            "0",
+            "false",
+            "true",
+            ""
+          ],
+          "failureReason": null,
+          "consoleOutput": "",
+          "errorText": null,
+          "durationMs": 0.7999999999128704
+        },
+        {
+          "testId": "l1-v2",
+          "status": "pass",
+          "actual": [
+            "true",
+            "false",
+            "0",
+            "true",
+            "",
+            "false"
+          ],
+          "expected": [
+            "true",
+            "false",
+            "0",
+            "true",
+            "",
+            "false"
+          ],
+          "failureReason": null,
+          "consoleOutput": "",
+          "errorText": null,
+          "durationMs": 1.4999999999645297
+        },
+        {
+          "testId": "l1-h1",
+          "status": "pass",
+          "actual": [
+            "true",
+            "false"
+          ],
+          "expected": [
+            "true",
+            "false"
+          ],
+          "failureReason": null,
+          "consoleOutput": "",
+          "errorText": null,
+          "durationMs": 0.9000000000014552
+        },
+        {
+          "testId": "l1-h2",
+          "status": "pass",
+          "actual": [
+            ""
+          ],
+          "expected": [
+            ""
+          ],
+          "failureReason": null,
+          "consoleOutput": "",
+          "errorText": null,
+          "durationMs": 0.49999999998817657
+        },
+        {
+          "testId": "l1-h3",
+          "status": "pass",
+          "actual": [
+            "false"
+          ],
+          "expected": [
+            "false"
+          ],
+          "failureReason": null,
+          "consoleOutput": "",
+          "errorText": null,
+          "durationMs": 0.29999999992469384
+        },
+        {
+          "testId": "l1-h4",
+          "status": "pass",
+          "actual": [
+            "true",
+            "true",
+            "true"
+          ],
+          "expected": [
+            "true",
+            "true",
+            "true"
+          ],
+          "failureReason": null,
+          "consoleOutput": "",
+          "errorText": null,
+          "durationMs": 0.4000000000132786
+        },
+        {
+          "testId": "l1-h5",
+          "status": "pass",
+          "actual": [
+            "true",
+            "true",
+            ""
+          ],
+          "expected": [
+            "true",
+            "true",
+            ""
+          ],
+          "failureReason": null,
+          "consoleOutput": "",
+          "errorText": null,
+          "durationMs": 0.4000000000132786
+        }
+      ],
+      "tests": [
+        {
+          "id": "l1-v1",
+          "level": 1,
+          "hidden": false
+        },
+        {
+          "id": "l1-v2",
+          "level": 1,
+          "hidden": false
+        },
+        {
+          "id": "l1-h1",
+          "level": 1,
+          "hidden": true,
+          "probes": "create-duplicate"
+        },
+        {
+          "id": "l1-h2",
+          "level": 1,
+          "hidden": true,
+          "probes": "has-absent"
+        },
+        {
+          "id": "l1-h3",
+          "level": 1,
+          "hidden": true,
+          "probes": "delete-absent"
+        },
+        {
+          "id": "l1-h4",
+          "level": 1,
+          "hidden": true,
+          "probes": "delete-then-recreate"
+        },
+        {
+          "id": "l1-h5",
+          "level": 1,
+          "hidden": true,
+          "probes": "has-after-delete"
+        }
+      ],
+      "passed": true,
+      "brokenLevels": [],
+      "scoreAfter": 100,
+      "codeSnapshot": "from collections import defaultdict\nclass Seat:\n    def __init__(self):\n        self.seatdetails = defaultdict()\n        self.seatlist = []\n\n    def booking(self, query):\n        operation, *args = query\n\n        if operation == 'CREATE':\n            sno = args[0]\n            \n            if sno not in self.seatlist:\n                self.seatdetails[sno] = ()\n                self.seatlist.append(sno)\n                return \"true\"\n            \n            else:\n                return \"false\"\n\n        if operation == 'GET':\n            sno = args[0]\n\n            if sno not in self.seatlist:\n                return \"\"\n            \n            return str(self.seatlist.index(sno))\n\n        \n        if operation == 'DELETE':\n            sno = args[0]\n\n            if sno not in self.seatlist:\n                return \"false\"\n\n            self.seatlist.remove(sno)\n            self.seatdetails.pop(sno, None)\n            return \"true\"\n\n\ndef solution(queries):\n    results = []\n    seat = Seat()\n    for query in queries:\n        results.append(seat.booking(query))\n    return results\n"
+    },
+    {
+      "id": "mwooord2-d5ezfn",
+      "at": 1795161299078,
+      "level": 2,
+      "results": [
+        {
+          "testId": "l1-v1",
+          "status": "pass",
+          "actual": [
+            "true",
+            "0",
+            "false",
+            "true",
+            ""
+          ],
+          "expected": [
+            "true",
+            "0",
+            "false",
+            "true",
+            ""
+          ],
+          "failureReason": null,
+          "consoleOutput": "",
+          "errorText": null,
+          "durationMs": 0.9999999999763531
+        },
+        {
+          "testId": "l1-v2",
+          "status": "pass",
+          "actual": [
+            "true",
+            "false",
+            "0",
+            "true",
+            "",
+            "false"
+          ],
+          "expected": [
+            "true",
+            "false",
+            "0",
+            "true",
+            "",
+            "false"
+          ],
+          "failureReason": null,
+          "consoleOutput": "",
+          "errorText": null,
+          "durationMs": 1.199999999926149
+        },
+        {
+          "testId": "l1-h1",
+          "status": "pass",
+          "actual": [
+            "true",
+            "false"
+          ],
+          "expected": [
+            "true",
+            "false"
+          ],
+          "failureReason": null,
+          "consoleOutput": "",
+          "errorText": null,
+          "durationMs": 0.6000000000767614
+        },
+        {
+          "testId": "l1-h2",
+          "status": "pass",
+          "actual": [
+            ""
+          ],
+          "expected": [
+            ""
+          ],
+          "failureReason": null,
+          "consoleOutput": "",
+          "errorText": null,
+          "durationMs": 0.49999999987448973
+        },
+        {
+          "testId": "l1-h3",
+          "status": "pass",
+          "actual": [
+            "false"
+          ],
+          "expected": [
+            "false"
+          ],
+          "failureReason": null,
+          "consoleOutput": "",
+          "errorText": null,
+          "durationMs": 0.6999999998242856
+        },
+        {
+          "testId": "l1-h4",
+          "status": "pass",
+          "actual": [
+            "true",
+            "true",
+            "true"
+          ],
+          "expected": [
+            "true",
+            "true",
+            "true"
+          ],
+          "failureReason": null,
+          "consoleOutput": "",
+          "errorText": null,
+          "durationMs": 0.5000000001018634
+        },
+        {
+          "testId": "l1-h5",
+          "status": "pass",
+          "actual": [
+            "true",
+            "true",
+            ""
+          ],
+          "expected": [
+            "true",
+            "true",
+            ""
+          ],
+          "failureReason": null,
+          "consoleOutput": "",
+          "errorText": null,
+          "durationMs": 0.7000000000516593
+        },
+        {
+          "testId": "l2-v1",
+          "status": "pass",
+          "actual": [
+            "true",
+            "true",
+            "true",
+            "a3, a2"
+          ],
+          "expected": [
+            "true",
+            "true",
+            "true",
+            "a3, a2"
+          ],
+          "failureReason": null,
+          "consoleOutput": "",
+          "errorText": null,
+          "durationMs": 0.5999999998493877
+        },
+        {
+          "testId": "l2-v2",
+          "status": "pass",
+          "actual": [
+            "true",
+            "true",
+            "true",
+            "false",
+            "a3, a2, a1"
+          ],
+          "expected": [
+            "true",
+            "true",
+            "true",
+            "false",
+            "a3, a2, a1"
+          ],
+          "failureReason": null,
+          "consoleOutput": "",
+          "errorText": null,
+          "durationMs": 0.7000000000516593
+        },
+        {
+          "testId": "l2-h1",
+          "status": "pass",
+          "actual": [
+            ""
+          ],
+          "expected": [
+            ""
+          ],
+          "failureReason": null,
+          "consoleOutput": "",
+          "errorText": null,
+          "durationMs": 0.6000000000767614
+        },
+        {
+          "testId": "l2-h2",
+          "status": "pass",
+          "actual": [
+            "true",
+            "a1"
+          ],
+          "expected": [
+            "true",
+            "a1"
+          ],
+          "failureReason": null,
+          "consoleOutput": "",
+          "errorText": null,
+          "durationMs": 0.7000000000516593
+        },
+        {
+          "testId": "l2-h3",
+          "status": "pass",
+          "actual": [
+            "true",
+            "true",
+            "true",
+            "a3, a2"
+          ],
+          "expected": [
+            "true",
+            "true",
+            "true",
+            "a3, a2"
+          ],
+          "failureReason": null,
+          "consoleOutput": "",
+          "errorText": null,
+          "durationMs": 0.49999999987448973
+        },
+        {
+          "testId": "l2-h4",
+          "status": "pass",
+          "actual": [
+            "true",
+            "true",
+            "false",
+            "a2, a1"
+          ],
+          "expected": [
+            "true",
+            "true",
+            "false",
+            "a2, a1"
+          ],
+          "failureReason": null,
+          "consoleOutput": "",
+          "errorText": null,
+          "durationMs": 0.5000000001018634
+        },
+        {
+          "testId": "l2-h5",
+          "status": "pass",
+          "actual": [
+            "true",
+            ""
+          ],
+          "expected": [
+            "true",
+            ""
+          ],
+          "failureReason": null,
+          "consoleOutput": "",
+          "errorText": null,
+          "durationMs": 0.5000000001018634
+        }
+      ],
+      "tests": [
+        {
+          "id": "l1-v1",
+          "level": 1,
+          "hidden": false
+        },
+        {
+          "id": "l1-v2",
+          "level": 1,
+          "hidden": false
+        },
+        {
+          "id": "l1-h1",
+          "level": 1,
+          "hidden": true,
+          "probes": "create-duplicate"
+        },
+        {
+          "id": "l1-h2",
+          "level": 1,
+          "hidden": true,
+          "probes": "has-absent"
+        },
+        {
+          "id": "l1-h3",
+          "level": 1,
+          "hidden": true,
+          "probes": "delete-absent"
+        },
+        {
+          "id": "l1-h4",
+          "level": 1,
+          "hidden": true,
+          "probes": "delete-then-recreate"
+        },
+        {
+          "id": "l1-h5",
+          "level": 1,
+          "hidden": true,
+          "probes": "has-after-delete"
+        },
+        {
+          "id": "l2-v1",
+          "level": 2,
+          "hidden": false
+        },
+        {
+          "id": "l2-v2",
+          "level": 2,
+          "hidden": false
+        },
+        {
+          "id": "l2-h1",
+          "level": 2,
+          "hidden": true,
+          "probes": "recent-empty"
+        },
+        {
+          "id": "l2-h2",
+          "level": 2,
+          "hidden": true,
+          "probes": "recent-fewer-than-n"
+        },
+        {
+          "id": "l2-h3",
+          "level": 2,
+          "hidden": true,
+          "probes": "recent-order-newest-first"
+        },
+        {
+          "id": "l2-h4",
+          "level": 2,
+          "hidden": true,
+          "probes": "recent-touch-updates-order"
+        },
+        {
+          "id": "l2-h5",
+          "level": 2,
+          "hidden": true,
+          "probes": "recent-n-zero"
+        }
+      ],
+      "passed": true,
+      "brokenLevels": [],
+      "scoreAfter": 250,
+      "codeSnapshot": "from collections import defaultdict\nclass Seat:\n    def __init__(self):\n        self.seatdetails = defaultdict(list)\n        self.seatlist = []\n        self.updatetime = 0\n\n    def booking(self, query):\n        operation, *args = query\n\n        if operation == 'CREATE':\n            sno = args[0]\n            \n            if sno not in self.seatlist:\n                self.seatdetails[sno] = [self.updatetime]\n                self.seatlist.append(sno)\n                self.updatetime += 1\n                return \"true\"\n            \n            else:\n                return \"false\"\n\n        if operation == 'GET':\n            sno = args[0]\n\n            if sno not in self.seatlist:\n                return \"\"\n            \n            return str(self.seatlist.index(sno))\n\n        \n        if operation == 'DELETE':\n            sno = args[0]\n\n            if sno not in self.seatlist:\n                return \"false\"\n\n            self.seatlist.remove(sno)\n            self.seatdetails.pop(sno, None)\n            return \"true\"\n\n\n        if operation == 'RECENT':\n            k = int(args[0])\n            temp = defaultdict(int)\n            for sno, attr in self.seatdetails.items():\n                timestamp = attr[0]\n                temp[sno] = timestamp\n            \n            temp = sorted(temp, key=lambda k: (-temp[k], k))\n\n            ans = ', '.join(temp[:k])\n\n            return ans\n\n\ndef solution(queries):\n    results = []\n    seat = Seat()\n    for query in queries:\n        results.append(seat.booking(query))\n    return results\n"
+    },
+    {
+      "id": "mwop42mi-kmk7zs",
+      "at": 1795162013514,
+      "level": 3,
+      "results": [
+        {
+          "testId": "l1-v1",
+          "status": "error",
+          "actual": null,
+          "expected": [
+            "true",
+            "0",
+            "false",
+            "true",
+            ""
+          ],
+          "failureReason": null,
+          "consoleOutput": "",
+          "errorText": "Traceback (most recent call last):\n  File \"solution.py\", line 87, in solution\n    results.append(seat.booking(query))\n                   ~~~~~~~~~~~~^^^^^^^\n  File \"solution.py\", line 30, in booking\n    return str(self.seatlist.index(sno)) if self.seatdetails[sno][1] < 0 else str(self.seatdetails[sno][1])\n                                            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nTypeError: '<' not supported between instances of 'str' and 'int'\n",
+          "durationMs": 1.8000000000029104
+        },
+        {
+          "testId": "l1-v2",
+          "status": "error",
+          "actual": null,
+          "expected": [
+            "true",
+            "false",
+            "0",
+            "true",
+            "",
+            "false"
+          ],
+          "failureReason": null,
+          "consoleOutput": "",
+          "errorText": "Traceback (most recent call last):\n  File \"solution.py\", line 87, in solution\n    results.append(seat.booking(query))\n                   ~~~~~~~~~~~~^^^^^^^\n  File \"solution.py\", line 30, in booking\n    return str(self.seatlist.index(sno)) if self.seatdetails[sno][1] < 0 else str(self.seatdetails[sno][1])\n                                            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nTypeError: '<' not supported between instances of 'str' and 'int'\n",
+          "durationMs": 1.6000000000531145
+        },
+        {
+          "testId": "l1-h1",
+          "status": "pass",
+          "actual": [
+            "true",
+            "false"
+          ],
+          "expected": [
+            "true",
+            "false"
+          ],
+          "failureReason": null,
+          "consoleOutput": "",
+          "errorText": null,
+          "durationMs": 1.1999999996987754
+        },
+        {
+          "testId": "l1-h2",
+          "status": "pass",
+          "actual": [
+            ""
+          ],
+          "expected": [
+            ""
+          ],
+          "failureReason": null,
+          "consoleOutput": "",
+          "errorText": null,
+          "durationMs": 0.7999999997991836
+        },
+        {
+          "testId": "l1-h3",
+          "status": "pass",
+          "actual": [
+            "false"
+          ],
+          "expected": [
+            "false"
+          ],
+          "failureReason": null,
+          "consoleOutput": "",
+          "errorText": null,
+          "durationMs": 0.7999999997991836
+        },
+        {
+          "testId": "l1-h4",
+          "status": "pass",
+          "actual": [
+            "true",
+            "true",
+            "true"
+          ],
+          "expected": [
+            "true",
+            "true",
+            "true"
+          ],
+          "failureReason": null,
+          "consoleOutput": "",
+          "errorText": null,
+          "durationMs": 0.7000000000516593
+        },
+        {
+          "testId": "l1-h5",
+          "status": "pass",
+          "actual": [
+            "true",
+            "true",
+            ""
+          ],
+          "expected": [
+            "true",
+            "true",
+            ""
+          ],
+          "failureReason": null,
+          "consoleOutput": "",
+          "errorText": null,
+          "durationMs": 1.299999999901047
+        },
+        {
+          "testId": "l2-v1",
+          "status": "pass",
+          "actual": [
+            "true",
+            "true",
+            "true",
+            "a3, a2"
+          ],
+          "expected": [
+            "true",
+            "true",
+            "true",
+            "a3, a2"
+          ],
+          "failureReason": null,
+          "consoleOutput": "",
+          "errorText": null,
+          "durationMs": 0.9000000000014552
+        },
+        {
+          "testId": "l2-v2",
+          "status": "pass",
+          "actual": [
+            "true",
+            "true",
+            "true",
+            "false",
+            "a3, a2, a1"
+          ],
+          "expected": [
+            "true",
+            "true",
+            "true",
+            "false",
+            "a3, a2, a1"
+          ],
+          "failureReason": null,
+          "consoleOutput": "",
+          "errorText": null,
+          "durationMs": 0.8000000002539309
+        },
+        {
+          "testId": "l2-h1",
+          "status": "pass",
+          "actual": [
+            ""
+          ],
+          "expected": [
+            ""
+          ],
+          "failureReason": null,
+          "consoleOutput": "",
+          "errorText": null,
+          "durationMs": 0.7000000000516593
+        },
+        {
+          "testId": "l2-h2",
+          "status": "pass",
+          "actual": [
+            "true",
+            "a1"
+          ],
+          "expected": [
+            "true",
+            "a1"
+          ],
+          "failureReason": null,
+          "consoleOutput": "",
+          "errorText": null,
+          "durationMs": 0.7999999997991836
+        },
+        {
+          "testId": "l2-h3",
+          "status": "pass",
+          "actual": [
+            "true",
+            "true",
+            "true",
+            "a3, a2"
+          ],
+          "expected": [
+            "true",
+            "true",
+            "true",
+            "a3, a2"
+          ],
+          "failureReason": null,
+          "consoleOutput": "",
+          "errorText": null,
+          "durationMs": 0.7000000000516593
+        },
+        {
+          "testId": "l2-h4",
+          "status": "pass",
+          "actual": [
+            "true",
+            "true",
+            "false",
+            "a2, a1"
+          ],
+          "expected": [
+            "true",
+            "true",
+            "false",
+            "a2, a1"
+          ],
+          "failureReason": null,
+          "consoleOutput": "",
+          "errorText": null,
+          "durationMs": 1.2000000001535227
+        },
+        {
+          "testId": "l2-h5",
+          "status": "pass",
+          "actual": [
+            "true",
+            ""
+          ],
+          "expected": [
+            "true",
+            ""
+          ],
+          "failureReason": null,
+          "consoleOutput": "",
+          "errorText": null,
+          "durationMs": 0.5999999998493877
+        },
+        {
+          "testId": "l3-v1",
+          "status": "pass",
+          "actual": [
+            "true",
+            "true",
+            "true",
+            "2"
+          ],
+          "expected": [
+            "true",
+            "true",
+            "true",
+            "2"
+          ],
+          "failureReason": null,
+          "consoleOutput": "",
+          "errorText": null,
+          "durationMs": 0.600000000304135
+        },
+        {
+          "testId": "l3-v2",
+          "status": "pass",
+          "actual": [
+            "true",
+            "true",
+            "true",
+            "2",
+            "3",
+            "false"
+          ],
+          "expected": [
+            "true",
+            "true",
+            "true",
+            "2",
+            "3",
+            "false"
+          ],
+          "failureReason": null,
+          "consoleOutput": "",
+          "errorText": null,
+          "durationMs": 0.7000000000516593
+        },
+        {
+          "testId": "l3-h1",
+          "status": "pass",
+          "actual": [
+            "true",
+            "false"
+          ],
+          "expected": [
+            "true",
+            "false"
+          ],
+          "failureReason": null,
+          "consoleOutput": "",
+          "errorText": null,
+          "durationMs": 0.49999999964711606
+        },
+        {
+          "testId": "l3-h2",
+          "status": "pass",
+          "actual": [
+            "true",
+            "false"
+          ],
+          "expected": [
+            "true",
+            "false"
+          ],
+          "failureReason": null,
+          "consoleOutput": "",
+          "errorText": null,
+          "durationMs": 0.5999999998493877
+        },
+        {
+          "testId": "l3-h3",
+          "status": "pass",
+          "actual": [
+            "true",
+            "true",
+            "false"
+          ],
+          "expected": [
+            "true",
+            "true",
+            "false"
+          ],
+          "failureReason": null,
+          "consoleOutput": "",
+          "errorText": null,
+          "durationMs": 0.5999999998493877
+        },
+        {
+          "testId": "l3-h4",
+          "status": "pass",
+          "actual": [
+            "true",
+            "true",
+            "true",
+            "0",
+            "3"
+          ],
+          "expected": [
+            "true",
+            "true",
+            "true",
+            "0",
+            "3"
+          ],
+          "failureReason": null,
+          "consoleOutput": "",
+          "errorText": null,
+          "durationMs": 0.5999999998493877
+        },
+        {
+          "testId": "l3-h5",
+          "status": "pass",
+          "actual": [
+            "true",
+            "false"
+          ],
+          "expected": [
+            "true",
+            "false"
+          ],
+          "failureReason": null,
+          "consoleOutput": "",
+          "errorText": null,
+          "durationMs": 0.8000000002539309
+        }
+      ],
+      "tests": [
+        {
+          "id": "l1-v1",
+          "level": 1,
+          "hidden": false
+        },
+        {
+          "id": "l1-v2",
+          "level": 1,
+          "hidden": false
+        },
+        {
+          "id": "l1-h1",
+          "level": 1,
+          "hidden": true,
+          "probes": "create-duplicate"
+        },
+        {
+          "id": "l1-h2",
+          "level": 1,
+          "hidden": true,
+          "probes": "has-absent"
+        },
+        {
+          "id": "l1-h3",
+          "level": 1,
+          "hidden": true,
+          "probes": "delete-absent"
+        },
+        {
+          "id": "l1-h4",
+          "level": 1,
+          "hidden": true,
+          "probes": "delete-then-recreate"
+        },
+        {
+          "id": "l1-h5",
+          "level": 1,
+          "hidden": true,
+          "probes": "has-after-delete"
+        },
+        {
+          "id": "l2-v1",
+          "level": 2,
+          "hidden": false
+        },
+        {
+          "id": "l2-v2",
+          "level": 2,
+          "hidden": false
+        },
+        {
+          "id": "l2-h1",
+          "level": 2,
+          "hidden": true,
+          "probes": "recent-empty"
+        },
+        {
+          "id": "l2-h2",
+          "level": 2,
+          "hidden": true,
+          "probes": "recent-fewer-than-n"
+        },
+        {
+          "id": "l2-h3",
+          "level": 2,
+          "hidden": true,
+          "probes": "recent-order-newest-first"
+        },
+        {
+          "id": "l2-h4",
+          "level": 2,
+          "hidden": true,
+          "probes": "recent-touch-updates-order"
+        },
+        {
+          "id": "l2-h5",
+          "level": 2,
+          "hidden": true,
+          "probes": "recent-n-zero"
+        },
+        {
+          "id": "l3-v1",
+          "level": 3,
+          "hidden": false
+        },
+        {
+          "id": "l3-v2",
+          "level": 3,
+          "hidden": false
+        },
+        {
+          "id": "l3-h1",
+          "level": 3,
+          "hidden": true,
+          "probes": "transfer-absent-source"
+        },
+        {
+          "id": "l3-h2",
+          "level": 3,
+          "hidden": true,
+          "probes": "transfer-absent-target"
+        },
+        {
+          "id": "l3-h3",
+          "level": 3,
+          "hidden": true,
+          "probes": "transfer-insufficient"
+        },
+        {
+          "id": "l3-h4",
+          "level": 3,
+          "hidden": true,
+          "probes": "transfer-exact-balance"
+        },
+        {
+          "id": "l3-h5",
+          "level": 3,
+          "hidden": true,
+          "probes": "transfer-into-self"
+        }
+      ],
+      "passed": false,
+      "brokenLevels": [
+        1
+      ],
+      "scoreAfter": 250,
+      "codeSnapshot": "from collections import defaultdict\nclass Seat:\n    def __init__(self):\n        self.seatdetails = defaultdict(list)\n        self.seatlist = []\n        self.updatetime = 0\n\n    def booking(self, query):\n        operation, *args = query\n\n        if operation == 'CREATE':\n            sno = args[0]\n            amount = int(args[1]) if len(args) > 1 else '-1'\n            \n            if sno not in self.seatlist:\n                self.seatdetails[sno] = [self.updatetime, amount]\n                self.seatlist.append(sno)\n                self.updatetime += 1\n                return \"true\"\n            \n            else:\n                return \"false\"\n\n        if operation == 'GET':\n            sno = args[0]\n\n            if sno not in self.seatlist:\n                return \"\"\n            \n            return str(self.seatlist.index(sno)) if self.seatdetails[sno][1] < 0 else str(self.seatdetails[sno][1])\n\n        \n        if operation == 'DELETE':\n            sno = args[0]\n\n            if sno not in self.seatlist:\n                return \"false\"\n\n            self.seatlist.remove(sno)\n            self.seatdetails.pop(sno, None)\n            return \"true\"\n\n\n        if operation == 'RECENT':\n            k = int(args[0])\n            temp = defaultdict(int)\n            for sno, attr in self.seatdetails.items():\n                timestamp = attr[0]\n                temp[sno] = timestamp\n            \n            temp = sorted(temp, key=lambda k: (-temp[k], k))\n\n            ans = ', '.join(temp[:k])\n            return ans\n\n\n        if operation == 'TRANSFER':\n                fromseat = args[0]\n                toseat = args[1]\n                amount = int(args[2])\n\n                if fromseat not in self.seatlist:\n                    return \"false\"\n\n                if toseat not in self.seatlist:\n                    return \"false\"\n\n                if fromseat == toseat:\n                    return \"false\"\n\n                frommoney = self.seatdetails[fromseat][1]\n                tomoney = self.seatdetails[toseat][1]\n\n                if frommoney < amount:\n                    return \"false\"\n\n                self.seatdetails[fromseat][1] = frommoney - amount\n                self.seatdetails[toseat][1] = tomoney + amount\n                return \"true\"\n\n\n\ndef solution(queries):\n    results = []\n    seat = Seat()\n    for query in queries:\n        results.append(seat.booking(query))\n    return results\n"
+    },
+    {
+      "id": "mwop52rm-uka6qn",
+      "at": 1795162060354,
+      "level": 3,
+      "results": [
+        {
+          "testId": "l1-v1",
+          "status": "pass",
+          "actual": [
+            "true",
+            "0",
+            "false",
+            "true",
+            ""
+          ],
+          "expected": [
+            "true",
+            "0",
+            "false",
+            "true",
+            ""
+          ],
+          "failureReason": null,
+          "consoleOutput": "",
+          "errorText": null,
+          "durationMs": 1.4999999998508429
+        },
+        {
+          "testId": "l1-v2",
+          "status": "pass",
+          "actual": [
+            "true",
+            "false",
+            "0",
+            "true",
+            "",
+            "false"
+          ],
+          "expected": [
+            "true",
+            "false",
+            "0",
+            "true",
+            "",
+            "false"
+          ],
+          "failureReason": null,
+          "consoleOutput": "",
+          "errorText": null,
+          "durationMs": 1.2000000001535227
+        },
+        {
+          "testId": "l1-h1",
+          "status": "pass",
+          "actual": [
+            "true",
+            "false"
+          ],
+          "expected": [
+            "true",
+            "false"
+          ],
+          "failureReason": null,
+          "consoleOutput": "",
+          "errorText": null,
+          "durationMs": 0.9000000000014552
+        },
+        {
+          "testId": "l1-h2",
+          "status": "pass",
+          "actual": [
+            ""
+          ],
+          "expected": [
+            ""
+          ],
+          "failureReason": null,
+          "consoleOutput": "",
+          "errorText": null,
+          "durationMs": 0.699999999596912
+        },
+        {
+          "testId": "l1-h3",
+          "status": "pass",
+          "actual": [
+            "false"
+          ],
+          "expected": [
+            "false"
+          ],
+          "failureReason": null,
+          "consoleOutput": "",
+          "errorText": null,
+          "durationMs": 0.7000000000516593
+        },
+        {
+          "testId": "l1-h4",
+          "status": "pass",
+          "actual": [
+            "true",
+            "true",
+            "true"
+          ],
+          "expected": [
+            "true",
+            "true",
+            "true"
+          ],
+          "failureReason": null,
+          "consoleOutput": "",
+          "errorText": null,
+          "durationMs": 0.5999999998493877
+        },
+        {
+          "testId": "l1-h5",
+          "status": "pass",
+          "actual": [
+            "true",
+            "true",
+            ""
+          ],
+          "expected": [
+            "true",
+            "true",
+            ""
+          ],
+          "failureReason": null,
+          "consoleOutput": "",
+          "errorText": null,
+          "durationMs": 0.5999999998493877
+        },
+        {
+          "testId": "l2-v1",
+          "status": "pass",
+          "actual": [
+            "true",
+            "true",
+            "true",
+            "a3, a2"
+          ],
+          "expected": [
+            "true",
+            "true",
+            "true",
+            "a3, a2"
+          ],
+          "failureReason": null,
+          "consoleOutput": "",
+          "errorText": null,
+          "durationMs": 0.7000000000516593
+        },
+        {
+          "testId": "l2-v2",
+          "status": "pass",
+          "actual": [
+            "true",
+            "true",
+            "true",
+            "false",
+            "a3, a2, a1"
+          ],
+          "expected": [
+            "true",
+            "true",
+            "true",
+            "false",
+            "a3, a2, a1"
+          ],
+          "failureReason": null,
+          "consoleOutput": "",
+          "errorText": null,
+          "durationMs": 0.9000000000014552
+        },
+        {
+          "testId": "l2-h1",
+          "status": "pass",
+          "actual": [
+            ""
+          ],
+          "expected": [
+            ""
+          ],
+          "failureReason": null,
+          "consoleOutput": "",
+          "errorText": null,
+          "durationMs": 0.7000000000516593
+        },
+        {
+          "testId": "l2-h2",
+          "status": "pass",
+          "actual": [
+            "true",
+            "a1"
+          ],
+          "expected": [
+            "true",
+            "a1"
+          ],
+          "failureReason": null,
+          "consoleOutput": "",
+          "errorText": null,
+          "durationMs": 0.5999999998493877
+        },
+        {
+          "testId": "l2-h3",
+          "status": "pass",
+          "actual": [
+            "true",
+            "true",
+            "true",
+            "a3, a2"
+          ],
+          "expected": [
+            "true",
+            "true",
+            "true",
+            "a3, a2"
+          ],
+          "failureReason": null,
+          "consoleOutput": "",
+          "errorText": null,
+          "durationMs": 0.7999999997991836
+        },
+        {
+          "testId": "l2-h4",
+          "status": "pass",
+          "actual": [
+            "true",
+            "true",
+            "false",
+            "a2, a1"
+          ],
+          "expected": [
+            "true",
+            "true",
+            "false",
+            "a2, a1"
+          ],
+          "failureReason": null,
+          "consoleOutput": "",
+          "errorText": null,
+          "durationMs": 0.7000000000516593
+        },
+        {
+          "testId": "l2-h5",
+          "status": "pass",
+          "actual": [
+            "true",
+            ""
+          ],
+          "expected": [
+            "true",
+            ""
+          ],
+          "failureReason": null,
+          "consoleOutput": "",
+          "errorText": null,
+          "durationMs": 0.7999999997991836
+        },
+        {
+          "testId": "l3-v1",
+          "status": "pass",
+          "actual": [
+            "true",
+            "true",
+            "true",
+            "2"
+          ],
+          "expected": [
+            "true",
+            "true",
+            "true",
+            "2"
+          ],
+          "failureReason": null,
+          "consoleOutput": "",
+          "errorText": null,
+          "durationMs": 0.600000000304135
+        },
+        {
+          "testId": "l3-v2",
+          "status": "pass",
+          "actual": [
+            "true",
+            "true",
+            "true",
+            "2",
+            "3",
+            "false"
+          ],
+          "expected": [
+            "true",
+            "true",
+            "true",
+            "2",
+            "3",
+            "false"
+          ],
+          "failureReason": null,
+          "consoleOutput": "",
+          "errorText": null,
+          "durationMs": 0.7000000000516593
+        },
+        {
+          "testId": "l3-h1",
+          "status": "pass",
+          "actual": [
+            "true",
+            "false"
+          ],
+          "expected": [
+            "true",
+            "false"
+          ],
+          "failureReason": null,
+          "consoleOutput": "",
+          "errorText": null,
+          "durationMs": 0.5999999998493877
+        },
+        {
+          "testId": "l3-h2",
+          "status": "pass",
+          "actual": [
+            "true",
+            "false"
+          ],
+          "expected": [
+            "true",
+            "false"
+          ],
+          "failureReason": null,
+          "consoleOutput": "",
+          "errorText": null,
+          "durationMs": 0.5000000001018634
+        },
+        {
+          "testId": "l3-h3",
+          "status": "pass",
+          "actual": [
+            "true",
+            "true",
+            "false"
+          ],
+          "expected": [
+            "true",
+            "true",
+            "false"
+          ],
+          "failureReason": null,
+          "consoleOutput": "",
+          "errorText": null,
+          "durationMs": 0.5999999998493877
+        },
+        {
+          "testId": "l3-h4",
+          "status": "pass",
+          "actual": [
+            "true",
+            "true",
+            "true",
+            "0",
+            "3"
+          ],
+          "expected": [
+            "true",
+            "true",
+            "true",
+            "0",
+            "3"
+          ],
+          "failureReason": null,
+          "consoleOutput": "",
+          "errorText": null,
+          "durationMs": 0.699999999596912
+        },
+        {
+          "testId": "l3-h5",
+          "status": "pass",
+          "actual": [
+            "true",
+            "false"
+          ],
+          "expected": [
+            "true",
+            "false"
+          ],
+          "failureReason": null,
+          "consoleOutput": "",
+          "errorText": null,
+          "durationMs": 0.7999999997991836
+        }
+      ],
+      "tests": [
+        {
+          "id": "l1-v1",
+          "level": 1,
+          "hidden": false
+        },
+        {
+          "id": "l1-v2",
+          "level": 1,
+          "hidden": false
+        },
+        {
+          "id": "l1-h1",
+          "level": 1,
+          "hidden": true,
+          "probes": "create-duplicate"
+        },
+        {
+          "id": "l1-h2",
+          "level": 1,
+          "hidden": true,
+          "probes": "has-absent"
+        },
+        {
+          "id": "l1-h3",
+          "level": 1,
+          "hidden": true,
+          "probes": "delete-absent"
+        },
+        {
+          "id": "l1-h4",
+          "level": 1,
+          "hidden": true,
+          "probes": "delete-then-recreate"
+        },
+        {
+          "id": "l1-h5",
+          "level": 1,
+          "hidden": true,
+          "probes": "has-after-delete"
+        },
+        {
+          "id": "l2-v1",
+          "level": 2,
+          "hidden": false
+        },
+        {
+          "id": "l2-v2",
+          "level": 2,
+          "hidden": false
+        },
+        {
+          "id": "l2-h1",
+          "level": 2,
+          "hidden": true,
+          "probes": "recent-empty"
+        },
+        {
+          "id": "l2-h2",
+          "level": 2,
+          "hidden": true,
+          "probes": "recent-fewer-than-n"
+        },
+        {
+          "id": "l2-h3",
+          "level": 2,
+          "hidden": true,
+          "probes": "recent-order-newest-first"
+        },
+        {
+          "id": "l2-h4",
+          "level": 2,
+          "hidden": true,
+          "probes": "recent-touch-updates-order"
+        },
+        {
+          "id": "l2-h5",
+          "level": 2,
+          "hidden": true,
+          "probes": "recent-n-zero"
+        },
+        {
+          "id": "l3-v1",
+          "level": 3,
+          "hidden": false
+        },
+        {
+          "id": "l3-v2",
+          "level": 3,
+          "hidden": false
+        },
+        {
+          "id": "l3-h1",
+          "level": 3,
+          "hidden": true,
+          "probes": "transfer-absent-source"
+        },
+        {
+          "id": "l3-h2",
+          "level": 3,
+          "hidden": true,
+          "probes": "transfer-absent-target"
+        },
+        {
+          "id": "l3-h3",
+          "level": 3,
+          "hidden": true,
+          "probes": "transfer-insufficient"
+        },
+        {
+          "id": "l3-h4",
+          "level": 3,
+          "hidden": true,
+          "probes": "transfer-exact-balance"
+        },
+        {
+          "id": "l3-h5",
+          "level": 3,
+          "hidden": true,
+          "probes": "transfer-into-self"
+        }
+      ],
+      "passed": true,
+      "brokenLevels": [],
+      "scoreAfter": 500,
+      "codeSnapshot": "from collections import defaultdict\nclass Seat:\n    def __init__(self):\n        self.seatdetails = defaultdict(list)\n        self.seatlist = []\n        self.updatetime = 0\n\n    def booking(self, query):\n        operation, *args = query\n\n        if operation == 'CREATE':\n            sno = args[0]\n            amount = int(args[1]) if len(args) > 1 else -1\n            \n            if sno not in self.seatlist:\n                self.seatdetails[sno] = [self.updatetime, amount]\n                self.seatlist.append(sno)\n                self.updatetime += 1\n                return \"true\"\n            \n            else:\n                return \"false\"\n\n        if operation == 'GET':\n            sno = args[0]\n\n            if sno not in self.seatlist:\n                return \"\"\n            \n            return str(self.seatlist.index(sno)) if self.seatdetails[sno][1] < 0 else str(self.seatdetails[sno][1])\n\n        \n        if operation == 'DELETE':\n            sno = args[0]\n\n            if sno not in self.seatlist:\n                return \"false\"\n\n            self.seatlist.remove(sno)\n            self.seatdetails.pop(sno, None)\n            return \"true\"\n\n\n        if operation == 'RECENT':\n            k = int(args[0])\n            temp = defaultdict(int)\n            for sno, attr in self.seatdetails.items():\n                timestamp = attr[0]\n                temp[sno] = timestamp\n            \n            temp = sorted(temp, key=lambda k: (-temp[k], k))\n\n            ans = ', '.join(temp[:k])\n            return ans\n\n\n        if operation == 'TRANSFER':\n                fromseat = args[0]\n                toseat = args[1]\n                amount = int(args[2])\n\n                if fromseat not in self.seatlist:\n                    return \"false\"\n\n                if toseat not in self.seatlist:\n                    return \"false\"\n\n                if fromseat == toseat:\n                    return \"false\"\n\n                frommoney = self.seatdetails[fromseat][1]\n                tomoney = self.seatdetails[toseat][1]\n\n                if frommoney < amount:\n                    return \"false\"\n\n                self.seatdetails[fromseat][1] = frommoney - amount\n                self.seatdetails[toseat][1] = tomoney + amount\n                return \"true\"\n\n\n\ndef solution(queries):\n    results = []\n    seat = Seat()\n    for query in queries:\n        results.append(seat.booking(query))\n    return results\n"
+    },
+    {
+      "id": "mwopyv00-mxqydv",
+      "at": 1795163449968,
+      "level": 4,
+      "results": [
+        {
+          "testId": "l1-v1",
+          "status": "pass",
+          "actual": [
+            "true",
+            "0",
+            "false",
+            "true",
+            ""
+          ],
+          "expected": [
+            "true",
+            "0",
+            "false",
+            "true",
+            ""
+          ],
+          "failureReason": null,
+          "consoleOutput": "",
+          "errorText": null,
+          "durationMs": 1.9999999999527063
+        },
+        {
+          "testId": "l1-v2",
+          "status": "pass",
+          "actual": [
+            "true",
+            "false",
+            "0",
+            "true",
+            "",
+            "false"
+          ],
+          "expected": [
+            "true",
+            "false",
+            "0",
+            "true",
+            "",
+            "false"
+          ],
+          "failureReason": null,
+          "consoleOutput": "",
+          "errorText": null,
+          "durationMs": 1.8000000000029104
+        },
+        {
+          "testId": "l1-h1",
+          "status": "pass",
+          "actual": [
+            "true",
+            "false"
+          ],
+          "expected": [
+            "true",
+            "false"
+          ],
+          "failureReason": null,
+          "consoleOutput": "",
+          "errorText": null,
+          "durationMs": 1.3000000003557943
+        },
+        {
+          "testId": "l1-h2",
+          "status": "pass",
+          "actual": [
+            ""
+          ],
+          "expected": [
+            ""
+          ],
+          "failureReason": null,
+          "consoleOutput": "",
+          "errorText": null,
+          "durationMs": 1.299999999901047
+        },
+        {
+          "testId": "l1-h3",
+          "status": "pass",
+          "actual": [
+            "false"
+          ],
+          "expected": [
+            "false"
+          ],
+          "failureReason": null,
+          "consoleOutput": "",
+          "errorText": null,
+          "durationMs": 1.1999999996987754
+        },
+        {
+          "testId": "l1-h4",
+          "status": "pass",
+          "actual": [
+            "true",
+            "true",
+            "true"
+          ],
+          "expected": [
+            "true",
+            "true",
+            "true"
+          ],
+          "failureReason": null,
+          "consoleOutput": "",
+          "errorText": null,
+          "durationMs": 1.7000000002553861
+        },
+        {
+          "testId": "l1-h5",
+          "status": "pass",
+          "actual": [
+            "true",
+            "true",
+            ""
+          ],
+          "expected": [
+            "true",
+            "true",
+            ""
+          ],
+          "failureReason": null,
+          "consoleOutput": "",
+          "errorText": null,
+          "durationMs": 1.2000000001535227
+        },
+        {
+          "testId": "l2-v1",
+          "status": "pass",
+          "actual": [
+            "true",
+            "true",
+            "true",
+            "a3, a2"
+          ],
+          "expected": [
+            "true",
+            "true",
+            "true",
+            "a3, a2"
+          ],
+          "failureReason": null,
+          "consoleOutput": "",
+          "errorText": null,
+          "durationMs": 1.299999999901047
+        },
+        {
+          "testId": "l2-v2",
+          "status": "pass",
+          "actual": [
+            "true",
+            "true",
+            "true",
+            "false",
+            "a3, a2, a1"
+          ],
+          "expected": [
+            "true",
+            "true",
+            "true",
+            "false",
+            "a3, a2, a1"
+          ],
+          "failureReason": null,
+          "consoleOutput": "",
+          "errorText": null,
+          "durationMs": 1.099999999951251
+        },
+        {
+          "testId": "l2-h1",
+          "status": "pass",
+          "actual": [
+            ""
+          ],
+          "expected": [
+            ""
+          ],
+          "failureReason": null,
+          "consoleOutput": "",
+          "errorText": null,
+          "durationMs": 1.099999999951251
+        },
+        {
+          "testId": "l2-h2",
+          "status": "pass",
+          "actual": [
+            "true",
+            "a1"
+          ],
+          "expected": [
+            "true",
+            "a1"
+          ],
+          "failureReason": null,
+          "consoleOutput": "",
+          "errorText": null,
+          "durationMs": 1.099999999951251
+        },
+        {
+          "testId": "l2-h3",
+          "status": "pass",
+          "actual": [
+            "true",
+            "true",
+            "true",
+            "a3, a2"
+          ],
+          "expected": [
+            "true",
+            "true",
+            "true",
+            "a3, a2"
+          ],
+          "failureReason": null,
+          "consoleOutput": "",
+          "errorText": null,
+          "durationMs": 1.6000000000531145
+        },
+        {
+          "testId": "l2-h4",
+          "status": "pass",
+          "actual": [
+            "true",
+            "true",
+            "false",
+            "a2, a1"
+          ],
+          "expected": [
+            "true",
+            "true",
+            "false",
+            "a2, a1"
+          ],
+          "failureReason": null,
+          "consoleOutput": "",
+          "errorText": null,
+          "durationMs": 1.099999999951251
+        },
+        {
+          "testId": "l2-h5",
+          "status": "pass",
+          "actual": [
+            "true",
+            ""
+          ],
+          "expected": [
+            "true",
+            ""
+          ],
+          "failureReason": null,
+          "consoleOutput": "",
+          "errorText": null,
+          "durationMs": 0.9000000000014552
+        },
+        {
+          "testId": "l3-v1",
+          "status": "pass",
+          "actual": [
+            "true",
+            "true",
+            "true",
+            "2"
+          ],
+          "expected": [
+            "true",
+            "true",
+            "true",
+            "2"
+          ],
+          "failureReason": null,
+          "consoleOutput": "",
+          "errorText": null,
+          "durationMs": 0.9000000000014552
+        },
+        {
+          "testId": "l3-v2",
+          "status": "pass",
+          "actual": [
+            "true",
+            "true",
+            "true",
+            "2",
+            "3",
+            "false"
+          ],
+          "expected": [
+            "true",
+            "true",
+            "true",
+            "2",
+            "3",
+            "false"
+          ],
+          "failureReason": null,
+          "consoleOutput": "",
+          "errorText": null,
+          "durationMs": 1.099999999951251
+        },
+        {
+          "testId": "l3-h1",
+          "status": "pass",
+          "actual": [
+            "true",
+            "false"
+          ],
+          "expected": [
+            "true",
+            "false"
+          ],
+          "failureReason": null,
+          "consoleOutput": "",
+          "errorText": null,
+          "durationMs": 1.099999999951251
+        },
+        {
+          "testId": "l3-h2",
+          "status": "pass",
+          "actual": [
+            "true",
+            "false"
+          ],
+          "expected": [
+            "true",
+            "false"
+          ],
+          "failureReason": null,
+          "consoleOutput": "",
+          "errorText": null,
+          "durationMs": 1.099999999951251
+        },
+        {
+          "testId": "l3-h3",
+          "status": "pass",
+          "actual": [
+            "true",
+            "true",
+            "false"
+          ],
+          "expected": [
+            "true",
+            "true",
+            "false"
+          ],
+          "failureReason": null,
+          "consoleOutput": "",
+          "errorText": null,
+          "durationMs": 1.1999999996987754
+        },
+        {
+          "testId": "l3-h4",
+          "status": "pass",
+          "actual": [
+            "true",
+            "true",
+            "true",
+            "0",
+            "3"
+          ],
+          "expected": [
+            "true",
+            "true",
+            "true",
+            "0",
+            "3"
+          ],
+          "failureReason": null,
+          "consoleOutput": "",
+          "errorText": null,
+          "durationMs": 0.9000000000014552
+        },
+        {
+          "testId": "l3-h5",
+          "status": "pass",
+          "actual": [
+            "true",
+            "false"
+          ],
+          "expected": [
+            "true",
+            "false"
+          ],
+          "failureReason": null,
+          "consoleOutput": "",
+          "errorText": null,
+          "durationMs": 0.9000000000014552
+        },
+        {
+          "testId": "l4-v1",
+          "status": "pass",
+          "actual": [
+            "sch1",
+            "",
+            "5"
+          ],
+          "expected": [
+            "sch1",
+            "",
+            "5"
+          ],
+          "failureReason": null,
+          "consoleOutput": "",
+          "errorText": null,
+          "durationMs": 1.0000000002037268
+        },
+        {
+          "testId": "l4-v2",
+          "status": "pass",
+          "actual": [
+            "sch1",
+            "",
+            "true",
+            ""
+          ],
+          "expected": [
+            "sch1",
+            "",
+            "true",
+            ""
+          ],
+          "failureReason": null,
+          "consoleOutput": "",
+          "errorText": null,
+          "durationMs": 0.9999999997489795
+        },
+        {
+          "testId": "l4-h1",
+          "status": "pass",
+          "actual": [
+            "sch1",
+            "",
+            "5"
+          ],
+          "expected": [
+            "sch1",
+            "",
+            "5"
+          ],
+          "failureReason": null,
+          "consoleOutput": "",
+          "errorText": null,
+          "durationMs": 0.9000000000014552
+        },
+        {
+          "testId": "l4-h2",
+          "status": "pass",
+          "actual": [
+            "sch1",
+            "true",
+            ""
+          ],
+          "expected": [
+            "sch1",
+            "true",
+            ""
+          ],
+          "failureReason": null,
+          "consoleOutput": "",
+          "errorText": null,
+          "durationMs": 1.0000000002037268
+        },
+        {
+          "testId": "l4-h3",
+          "status": "fail",
+          "actual": [
+            "sch1",
+            "5",
+            null
+          ],
+          "expected": [
+            "sch1",
+            "5",
+            "false"
+          ],
+          "failureReason": {
+            "kind": "type",
+            "index": 2,
+            "actualType": "None",
+            "expectedType": "string"
+          },
+          "consoleOutput": "",
+          "errorText": null,
+          "durationMs": 1.1999999996987754
+        },
+        {
+          "testId": "l4-h4",
+          "status": "pass",
+          "actual": [
+            "false"
+          ],
+          "expected": [
+            "false"
+          ],
+          "failureReason": null,
+          "consoleOutput": "",
+          "errorText": null,
+          "durationMs": 1.2000000001535227
+        },
+        {
+          "testId": "l4-h5",
+          "status": "pass",
+          "actual": [
+            "sch1",
+            "sch2",
+            "true",
+            "",
+            "3"
+          ],
+          "expected": [
+            "sch1",
+            "sch2",
+            "true",
+            "",
+            "3"
+          ],
+          "failureReason": null,
+          "consoleOutput": "",
+          "errorText": null,
+          "durationMs": 1.099999999951251
+        }
+      ],
+      "tests": [
+        {
+          "id": "l1-v1",
+          "level": 1,
+          "hidden": false
+        },
+        {
+          "id": "l1-v2",
+          "level": 1,
+          "hidden": false
+        },
+        {
+          "id": "l1-h1",
+          "level": 1,
+          "hidden": true,
+          "probes": "create-duplicate"
+        },
+        {
+          "id": "l1-h2",
+          "level": 1,
+          "hidden": true,
+          "probes": "has-absent"
+        },
+        {
+          "id": "l1-h3",
+          "level": 1,
+          "hidden": true,
+          "probes": "delete-absent"
+        },
+        {
+          "id": "l1-h4",
+          "level": 1,
+          "hidden": true,
+          "probes": "delete-then-recreate"
+        },
+        {
+          "id": "l1-h5",
+          "level": 1,
+          "hidden": true,
+          "probes": "has-after-delete"
+        },
+        {
+          "id": "l2-v1",
+          "level": 2,
+          "hidden": false
+        },
+        {
+          "id": "l2-v2",
+          "level": 2,
+          "hidden": false
+        },
+        {
+          "id": "l2-h1",
+          "level": 2,
+          "hidden": true,
+          "probes": "recent-empty"
+        },
+        {
+          "id": "l2-h2",
+          "level": 2,
+          "hidden": true,
+          "probes": "recent-fewer-than-n"
+        },
+        {
+          "id": "l2-h3",
+          "level": 2,
+          "hidden": true,
+          "probes": "recent-order-newest-first"
+        },
+        {
+          "id": "l2-h4",
+          "level": 2,
+          "hidden": true,
+          "probes": "recent-touch-updates-order"
+        },
+        {
+          "id": "l2-h5",
+          "level": 2,
+          "hidden": true,
+          "probes": "recent-n-zero"
+        },
+        {
+          "id": "l3-v1",
+          "level": 3,
+          "hidden": false
+        },
+        {
+          "id": "l3-v2",
+          "level": 3,
+          "hidden": false
+        },
+        {
+          "id": "l3-h1",
+          "level": 3,
+          "hidden": true,
+          "probes": "transfer-absent-source"
+        },
+        {
+          "id": "l3-h2",
+          "level": 3,
+          "hidden": true,
+          "probes": "transfer-absent-target"
+        },
+        {
+          "id": "l3-h3",
+          "level": 3,
+          "hidden": true,
+          "probes": "transfer-insufficient"
+        },
+        {
+          "id": "l3-h4",
+          "level": 3,
+          "hidden": true,
+          "probes": "transfer-exact-balance"
+        },
+        {
+          "id": "l3-h5",
+          "level": 3,
+          "hidden": true,
+          "probes": "transfer-into-self"
+        },
+        {
+          "id": "l4-v1",
+          "level": 4,
+          "hidden": false
+        },
+        {
+          "id": "l4-v2",
+          "level": 4,
+          "hidden": false
+        },
+        {
+          "id": "l4-h1",
+          "level": 4,
+          "hidden": true,
+          "probes": "schedule-runs-at-fire-time"
+        },
+        {
+          "id": "l4-h2",
+          "level": 4,
+          "hidden": true,
+          "probes": "schedule-cancel-before-fire"
+        },
+        {
+          "id": "l4-h3",
+          "level": 4,
+          "hidden": true,
+          "probes": "cancel-after-fire-fails"
+        },
+        {
+          "id": "l4-h4",
+          "level": 4,
+          "hidden": true,
+          "probes": "cancel-unknown-token"
+        },
+        {
+          "id": "l4-h5",
+          "level": 4,
+          "hidden": true,
+          "probes": "schedule-two-independent"
+        }
+      ],
+      "passed": false,
+      "brokenLevels": [],
+      "scoreAfter": 757,
+      "codeSnapshot": "from collections import defaultdict\nclass Seat:\n    def __init__(self):\n        self.seatdetails = defaultdict(list)\n        self.seatlist = []\n        self.updatetime = 0\n        self.schedulemap = defaultdict(list)\n\n    def booking(self, query):\n        operation, *args = query\n\n\n\n        #  create operation  ---------------------------------------------\n        if operation == 'CREATE':\n            sno = args[0]\n            amount = int(args[1]) if len(args) > 1 else -1\n            \n            if sno not in self.seatlist:\n                self.seatdetails[sno] = [self.updatetime, amount]\n                self.seatlist.append(sno)\n                self.updatetime += 1\n                return \"true\"\n            \n            else:\n                return \"false\"\n\n        #  get operation  ---------------------------------------------       \n        if operation == 'GET':\n            sno = args[0]\n\n            if sno not in self.seatlist:\n                return \"\"\n            \n            return str(self.seatlist.index(sno)) if self.seatdetails[sno][1] < 0 else str(self.seatdetails[sno][1])\n\n        \n        #  delete operation  ---------------------------------------------\n        if operation == 'DELETE':\n            sno = args[0]\n\n            if sno not in self.seatlist:\n                return \"false\"\n\n            self.seatlist.remove(sno)\n            self.seatdetails.pop(sno, None)\n            return \"true\"\n\n\n        #  recent operation  ---------------------------------------------\n        if operation == 'RECENT':\n            k = int(args[0])\n            temp = defaultdict(int)\n            for sno, attr in self.seatdetails.items():\n                timestamp = attr[0]\n                temp[sno] = timestamp\n            \n            temp = sorted(temp, key=lambda k: (-temp[k], k))\n\n            ans = ', '.join(temp[:k])\n            return ans\n\n\n        #  transfer operation  ---------------------------------------------\n        if operation == 'TRANSFER':\n                fromseat = args[0]\n                toseat = args[1]\n                amount = int(args[2])\n\n                if fromseat not in self.seatlist:\n                    return \"false\"\n\n                if toseat not in self.seatlist:\n                    return \"false\"\n\n                if fromseat == toseat:\n                    return \"false\"\n\n                frommoney = self.seatdetails[fromseat][1]\n                tomoney = self.seatdetails[toseat][1]\n\n                if frommoney < amount:\n                    return \"false\"\n\n                self.seatdetails[fromseat][1] = frommoney - amount\n                self.seatdetails[toseat][1] = tomoney + amount\n                return \"true\"\n\n        #  schedule operation  ---------------------------------------------\n        if operation == 'SCHEDULE':\n            schedule_time = int(args[0])\n            exec_time = int(args[1])\n            sno = args[2]\n            amount = int(args[3])\n\n            if schedule_time > exec_time:\n                return \"false\"\n\n            if sno not in self.seatlist:\n                self.seatdetails[sno] = [exec_time, amount]\n                self.seatlist.append(sno)\n                self.updatetime += exec_time + 1\n                schedulevar =  \"sch\"+str(schedule_time)\n                self.schedulemap[schedulevar] = [sno,schedule_time]\n                return schedulevar\n            \n            else:\n                return \"false\"\n\n        #  get at operation  ---------------------------------------------\n        if operation == 'GET_AT':\n            exec_time = int(args[0])\n            sno = args[1]\n\n            if sno not in self.seatlist or self.seatdetails[sno][0] > exec_time:\n                return \"\"\n            \n            return str(self.seatlist.index(sno)) if self.seatdetails[sno][1] < 0 else str(self.seatdetails[sno][1])        \n        \n        \n        \n        #  cancel operation  ---------------------------------------------\n        if operation == 'CANCEL':\n            exec_time = int(args[0])\n            schedule_var = args[1]\n\n            if schedule_var not in self.schedulemap:\n                return \"false\"\n\n            sno = self.schedulemap[schedule_var][0]\n\n            if sno not in self.seatlist:\n                return false\n\n            create_exec_time = self.seatdetails[sno][0]\n            create_schedule_time = self.schedulemap[schedule_var][1]\n\n            if exec_time > create_schedule_time and exec_time < create_exec_time:\n                if sno not in self.seatlist:\n                    return \"false\"\n\n                self.seatlist.remove(sno)\n                self.seatdetails.pop(sno, None)\n                self.schedulemap.pop(schedule_var, None)\n                return \"true\"\n\n\n\n        \n\n            \n\n\n        \n\n\n\ndef solution(queries):\n    results = []\n    seat = Seat()\n    for query in queries:\n        results.append(seat.booking(query))\n    return results\n"
+    },
+    {
+      "id": "mwopzcam-nnxgvo",
+      "at": 1795163472382,
+      "level": 4,
+      "results": [
+        {
+          "testId": "l1-v1",
+          "status": "pass",
+          "actual": [
+            "true",
+            "0",
+            "false",
+            "true",
+            ""
+          ],
+          "expected": [
+            "true",
+            "0",
+            "false",
+            "true",
+            ""
+          ],
+          "failureReason": null,
+          "consoleOutput": "",
+          "errorText": null,
+          "durationMs": 1.8999999997504347
+        },
+        {
+          "testId": "l1-v2",
+          "status": "pass",
+          "actual": [
+            "true",
+            "false",
+            "0",
+            "true",
+            "",
+            "false"
+          ],
+          "expected": [
+            "true",
+            "false",
+            "0",
+            "true",
+            "",
+            "false"
+          ],
+          "failureReason": null,
+          "consoleOutput": "",
+          "errorText": null,
+          "durationMs": 1.6000000000531145
+        },
+        {
+          "testId": "l1-h1",
+          "status": "pass",
+          "actual": [
+            "true",
+            "false"
+          ],
+          "expected": [
+            "true",
+            "false"
+          ],
+          "failureReason": null,
+          "consoleOutput": "",
+          "errorText": null,
+          "durationMs": 1.3999999996485712
+        },
+        {
+          "testId": "l1-h2",
+          "status": "pass",
+          "actual": [
+            ""
+          ],
+          "expected": [
+            ""
+          ],
+          "failureReason": null,
+          "consoleOutput": "",
+          "errorText": null,
+          "durationMs": 1.299999999901047
+        },
+        {
+          "testId": "l1-h3",
+          "status": "pass",
+          "actual": [
+            "false"
+          ],
+          "expected": [
+            "false"
+          ],
+          "failureReason": null,
+          "consoleOutput": "",
+          "errorText": null,
+          "durationMs": 1.099999999951251
+        },
+        {
+          "testId": "l1-h4",
+          "status": "pass",
+          "actual": [
+            "true",
+            "true",
+            "true"
+          ],
+          "expected": [
+            "true",
+            "true",
+            "true"
+          ],
+          "failureReason": null,
+          "consoleOutput": "",
+          "errorText": null,
+          "durationMs": 1.8000000000029104
+        },
+        {
+          "testId": "l1-h5",
+          "status": "pass",
+          "actual": [
+            "true",
+            "true",
+            ""
+          ],
+          "expected": [
+            "true",
+            "true",
+            ""
+          ],
+          "failureReason": null,
+          "consoleOutput": "",
+          "errorText": null,
+          "durationMs": 0.9999999997489795
+        },
+        {
+          "testId": "l2-v1",
+          "status": "pass",
+          "actual": [
+            "true",
+            "true",
+            "true",
+            "a3, a2"
+          ],
+          "expected": [
+            "true",
+            "true",
+            "true",
+            "a3, a2"
+          ],
+          "failureReason": null,
+          "consoleOutput": "",
+          "errorText": null,
+          "durationMs": 1.2000000001535227
+        },
+        {
+          "testId": "l2-v2",
+          "status": "pass",
+          "actual": [
+            "true",
+            "true",
+            "true",
+            "false",
+            "a3, a2, a1"
+          ],
+          "expected": [
+            "true",
+            "true",
+            "true",
+            "false",
+            "a3, a2, a1"
+          ],
+          "failureReason": null,
+          "consoleOutput": "",
+          "errorText": null,
+          "durationMs": 0.9999999997489795
+        },
+        {
+          "testId": "l2-h1",
+          "status": "pass",
+          "actual": [
+            ""
+          ],
+          "expected": [
+            ""
+          ],
+          "failureReason": null,
+          "consoleOutput": "",
+          "errorText": null,
+          "durationMs": 1.099999999951251
+        },
+        {
+          "testId": "l2-h2",
+          "status": "pass",
+          "actual": [
+            "true",
+            "a1"
+          ],
+          "expected": [
+            "true",
+            "a1"
+          ],
+          "failureReason": null,
+          "consoleOutput": "",
+          "errorText": null,
+          "durationMs": 1.099999999951251
+        },
+        {
+          "testId": "l2-h3",
+          "status": "pass",
+          "actual": [
+            "true",
+            "true",
+            "true",
+            "a3, a2"
+          ],
+          "expected": [
+            "true",
+            "true",
+            "true",
+            "a3, a2"
+          ],
+          "failureReason": null,
+          "consoleOutput": "",
+          "errorText": null,
+          "durationMs": 1.0000000002037268
+        },
+        {
+          "testId": "l2-h4",
+          "status": "pass",
+          "actual": [
+            "true",
+            "true",
+            "false",
+            "a2, a1"
+          ],
+          "expected": [
+            "true",
+            "true",
+            "false",
+            "a2, a1"
+          ],
+          "failureReason": null,
+          "consoleOutput": "",
+          "errorText": null,
+          "durationMs": 1.6000000000531145
+        },
+        {
+          "testId": "l2-h5",
+          "status": "pass",
+          "actual": [
+            "true",
+            ""
+          ],
+          "expected": [
+            "true",
+            ""
+          ],
+          "failureReason": null,
+          "consoleOutput": "",
+          "errorText": null,
+          "durationMs": 1.099999999951251
+        },
+        {
+          "testId": "l3-v1",
+          "status": "pass",
+          "actual": [
+            "true",
+            "true",
+            "true",
+            "2"
+          ],
+          "expected": [
+            "true",
+            "true",
+            "true",
+            "2"
+          ],
+          "failureReason": null,
+          "consoleOutput": "",
+          "errorText": null,
+          "durationMs": 1.1000000004059984
+        },
+        {
+          "testId": "l3-v2",
+          "status": "pass",
+          "actual": [
+            "true",
+            "true",
+            "true",
+            "2",
+            "3",
+            "false"
+          ],
+          "expected": [
+            "true",
+            "true",
+            "true",
+            "2",
+            "3",
+            "false"
+          ],
+          "failureReason": null,
+          "consoleOutput": "",
+          "errorText": null,
+          "durationMs": 0.9000000000014552
+        },
+        {
+          "testId": "l3-h1",
+          "status": "pass",
+          "actual": [
+            "true",
+            "false"
+          ],
+          "expected": [
+            "true",
+            "false"
+          ],
+          "failureReason": null,
+          "consoleOutput": "",
+          "errorText": null,
+          "durationMs": 0.9000000000014552
+        },
+        {
+          "testId": "l3-h2",
+          "status": "pass",
+          "actual": [
+            "true",
+            "false"
+          ],
+          "expected": [
+            "true",
+            "false"
+          ],
+          "failureReason": null,
+          "consoleOutput": "",
+          "errorText": null,
+          "durationMs": 1.099999999951251
+        },
+        {
+          "testId": "l3-h3",
+          "status": "pass",
+          "actual": [
+            "true",
+            "true",
+            "false"
+          ],
+          "expected": [
+            "true",
+            "true",
+            "false"
+          ],
+          "failureReason": null,
+          "consoleOutput": "",
+          "errorText": null,
+          "durationMs": 0.9000000000014552
+        },
+        {
+          "testId": "l3-h4",
+          "status": "pass",
+          "actual": [
+            "true",
+            "true",
+            "true",
+            "0",
+            "3"
+          ],
+          "expected": [
+            "true",
+            "true",
+            "true",
+            "0",
+            "3"
+          ],
+          "failureReason": null,
+          "consoleOutput": "",
+          "errorText": null,
+          "durationMs": 1.1999999996987754
+        },
+        {
+          "testId": "l3-h5",
+          "status": "pass",
+          "actual": [
+            "true",
+            "false"
+          ],
+          "expected": [
+            "true",
+            "false"
+          ],
+          "failureReason": null,
+          "consoleOutput": "",
+          "errorText": null,
+          "durationMs": 1.099999999951251
+        },
+        {
+          "testId": "l4-v1",
+          "status": "pass",
+          "actual": [
+            "sch1",
+            "",
+            "5"
+          ],
+          "expected": [
+            "sch1",
+            "",
+            "5"
+          ],
+          "failureReason": null,
+          "consoleOutput": "",
+          "errorText": null,
+          "durationMs": 1.099999999951251
+        },
+        {
+          "testId": "l4-v2",
+          "status": "pass",
+          "actual": [
+            "sch1",
+            "",
+            "true",
+            ""
+          ],
+          "expected": [
+            "sch1",
+            "",
+            "true",
+            ""
+          ],
+          "failureReason": null,
+          "consoleOutput": "",
+          "errorText": null,
+          "durationMs": 1.0000000002037268
+        },
+        {
+          "testId": "l4-h1",
+          "status": "pass",
+          "actual": [
+            "sch1",
+            "",
+            "5"
+          ],
+          "expected": [
+            "sch1",
+            "",
+            "5"
+          ],
+          "failureReason": null,
+          "consoleOutput": "",
+          "errorText": null,
+          "durationMs": 0.9000000000014552
+        },
+        {
+          "testId": "l4-h2",
+          "status": "pass",
+          "actual": [
+            "sch1",
+            "true",
+            ""
+          ],
+          "expected": [
+            "sch1",
+            "true",
+            ""
+          ],
+          "failureReason": null,
+          "consoleOutput": "",
+          "errorText": null,
+          "durationMs": 1.0000000002037268
+        },
+        {
+          "testId": "l4-h3",
+          "status": "pass",
+          "actual": [
+            "sch1",
+            "5",
+            "false"
+          ],
+          "expected": [
+            "sch1",
+            "5",
+            "false"
+          ],
+          "failureReason": null,
+          "consoleOutput": "",
+          "errorText": null,
+          "durationMs": 0.9000000000014552
+        },
+        {
+          "testId": "l4-h4",
+          "status": "pass",
+          "actual": [
+            "false"
+          ],
+          "expected": [
+            "false"
+          ],
+          "failureReason": null,
+          "consoleOutput": "",
+          "errorText": null,
+          "durationMs": 1.5000000003055902
+        },
+        {
+          "testId": "l4-h5",
+          "status": "pass",
+          "actual": [
+            "sch1",
+            "sch2",
+            "true",
+            "",
+            "3"
+          ],
+          "expected": [
+            "sch1",
+            "sch2",
+            "true",
+            "",
+            "3"
+          ],
+          "failureReason": null,
+          "consoleOutput": "",
+          "errorText": null,
+          "durationMs": 0.9000000000014552
+        }
+      ],
+      "tests": [
+        {
+          "id": "l1-v1",
+          "level": 1,
+          "hidden": false
+        },
+        {
+          "id": "l1-v2",
+          "level": 1,
+          "hidden": false
+        },
+        {
+          "id": "l1-h1",
+          "level": 1,
+          "hidden": true,
+          "probes": "create-duplicate"
+        },
+        {
+          "id": "l1-h2",
+          "level": 1,
+          "hidden": true,
+          "probes": "has-absent"
+        },
+        {
+          "id": "l1-h3",
+          "level": 1,
+          "hidden": true,
+          "probes": "delete-absent"
+        },
+        {
+          "id": "l1-h4",
+          "level": 1,
+          "hidden": true,
+          "probes": "delete-then-recreate"
+        },
+        {
+          "id": "l1-h5",
+          "level": 1,
+          "hidden": true,
+          "probes": "has-after-delete"
+        },
+        {
+          "id": "l2-v1",
+          "level": 2,
+          "hidden": false
+        },
+        {
+          "id": "l2-v2",
+          "level": 2,
+          "hidden": false
+        },
+        {
+          "id": "l2-h1",
+          "level": 2,
+          "hidden": true,
+          "probes": "recent-empty"
+        },
+        {
+          "id": "l2-h2",
+          "level": 2,
+          "hidden": true,
+          "probes": "recent-fewer-than-n"
+        },
+        {
+          "id": "l2-h3",
+          "level": 2,
+          "hidden": true,
+          "probes": "recent-order-newest-first"
+        },
+        {
+          "id": "l2-h4",
+          "level": 2,
+          "hidden": true,
+          "probes": "recent-touch-updates-order"
+        },
+        {
+          "id": "l2-h5",
+          "level": 2,
+          "hidden": true,
+          "probes": "recent-n-zero"
+        },
+        {
+          "id": "l3-v1",
+          "level": 3,
+          "hidden": false
+        },
+        {
+          "id": "l3-v2",
+          "level": 3,
+          "hidden": false
+        },
+        {
+          "id": "l3-h1",
+          "level": 3,
+          "hidden": true,
+          "probes": "transfer-absent-source"
+        },
+        {
+          "id": "l3-h2",
+          "level": 3,
+          "hidden": true,
+          "probes": "transfer-absent-target"
+        },
+        {
+          "id": "l3-h3",
+          "level": 3,
+          "hidden": true,
+          "probes": "transfer-insufficient"
+        },
+        {
+          "id": "l3-h4",
+          "level": 3,
+          "hidden": true,
+          "probes": "transfer-exact-balance"
+        },
+        {
+          "id": "l3-h5",
+          "level": 3,
+          "hidden": true,
+          "probes": "transfer-into-self"
+        },
+        {
+          "id": "l4-v1",
+          "level": 4,
+          "hidden": false
+        },
+        {
+          "id": "l4-v2",
+          "level": 4,
+          "hidden": false
+        },
+        {
+          "id": "l4-h1",
+          "level": 4,
+          "hidden": true,
+          "probes": "schedule-runs-at-fire-time"
+        },
+        {
+          "id": "l4-h2",
+          "level": 4,
+          "hidden": true,
+          "probes": "schedule-cancel-before-fire"
+        },
+        {
+          "id": "l4-h3",
+          "level": 4,
+          "hidden": true,
+          "probes": "cancel-after-fire-fails"
+        },
+        {
+          "id": "l4-h4",
+          "level": 4,
+          "hidden": true,
+          "probes": "cancel-unknown-token"
+        },
+        {
+          "id": "l4-h5",
+          "level": 4,
+          "hidden": true,
+          "probes": "schedule-two-independent"
+        }
+      ],
+      "passed": true,
+      "brokenLevels": [],
+      "scoreAfter": 800,
+      "codeSnapshot": "from collections import defaultdict\nclass Seat:\n    def __init__(self):\n        self.seatdetails = defaultdict(list)\n        self.seatlist = []\n        self.updatetime = 0\n        self.schedulemap = defaultdict(list)\n\n    def booking(self, query):\n        operation, *args = query\n\n\n\n        #  create operation  ---------------------------------------------\n        if operation == 'CREATE':\n            sno = args[0]\n            amount = int(args[1]) if len(args) > 1 else -1\n            \n            if sno not in self.seatlist:\n                self.seatdetails[sno] = [self.updatetime, amount]\n                self.seatlist.append(sno)\n                self.updatetime += 1\n                return \"true\"\n            \n            else:\n                return \"false\"\n\n        #  get operation  ---------------------------------------------       \n        if operation == 'GET':\n            sno = args[0]\n\n            if sno not in self.seatlist:\n                return \"\"\n            \n            return str(self.seatlist.index(sno)) if self.seatdetails[sno][1] < 0 else str(self.seatdetails[sno][1])\n\n        \n        #  delete operation  ---------------------------------------------\n        if operation == 'DELETE':\n            sno = args[0]\n\n            if sno not in self.seatlist:\n                return \"false\"\n\n            self.seatlist.remove(sno)\n            self.seatdetails.pop(sno, None)\n            return \"true\"\n\n\n        #  recent operation  ---------------------------------------------\n        if operation == 'RECENT':\n            k = int(args[0])\n            temp = defaultdict(int)\n            for sno, attr in self.seatdetails.items():\n                timestamp = attr[0]\n                temp[sno] = timestamp\n            \n            temp = sorted(temp, key=lambda k: (-temp[k], k))\n\n            ans = ', '.join(temp[:k])\n            return ans\n\n\n        #  transfer operation  ---------------------------------------------\n        if operation == 'TRANSFER':\n                fromseat = args[0]\n                toseat = args[1]\n                amount = int(args[2])\n\n                if fromseat not in self.seatlist:\n                    return \"false\"\n\n                if toseat not in self.seatlist:\n                    return \"false\"\n\n                if fromseat == toseat:\n                    return \"false\"\n\n                frommoney = self.seatdetails[fromseat][1]\n                tomoney = self.seatdetails[toseat][1]\n\n                if frommoney < amount:\n                    return \"false\"\n\n                self.seatdetails[fromseat][1] = frommoney - amount\n                self.seatdetails[toseat][1] = tomoney + amount\n                return \"true\"\n\n        #  schedule operation  ---------------------------------------------\n        if operation == 'SCHEDULE':\n            schedule_time = int(args[0])\n            exec_time = int(args[1])\n            sno = args[2]\n            amount = int(args[3])\n\n            if schedule_time > exec_time:\n                return \"false\"\n\n            if sno not in self.seatlist:\n                self.seatdetails[sno] = [exec_time, amount]\n                self.seatlist.append(sno)\n                self.updatetime += exec_time + 1\n                schedulevar =  \"sch\"+str(schedule_time)\n                self.schedulemap[schedulevar] = [sno,schedule_time]\n                return schedulevar\n            \n            else:\n                return \"false\"\n\n        #  get at operation  ---------------------------------------------\n        if operation == 'GET_AT':\n            exec_time = int(args[0])\n            sno = args[1]\n\n            if sno not in self.seatlist or self.seatdetails[sno][0] > exec_time:\n                return \"\"\n            \n            return str(self.seatlist.index(sno)) if self.seatdetails[sno][1] < 0 else str(self.seatdetails[sno][1])        \n        \n        \n        \n        #  cancel operation  ---------------------------------------------\n        if operation == 'CANCEL':\n            exec_time = int(args[0])\n            schedule_var = args[1]\n\n            if schedule_var not in self.schedulemap:\n                return \"false\"\n\n            sno = self.schedulemap[schedule_var][0]\n\n            if sno not in self.seatlist:\n                return false\n\n            create_exec_time = self.seatdetails[sno][0]\n            create_schedule_time = self.schedulemap[schedule_var][1]\n\n            if exec_time > create_schedule_time and exec_time < create_exec_time:\n                if sno not in self.seatlist:\n                    return \"false\"\n\n                self.seatlist.remove(sno)\n                self.seatdetails.pop(sno, None)\n                self.schedulemap.pop(schedule_var, None)\n                return \"true\"\n            \n            else:\n                return \"false\"\n\n\n\n        \n\n            \n\n\n        \n\n\n\ndef solution(queries):\n    results = []\n    seat = Seat()\n    for query in queries:\n        results.append(seat.booking(query))\n    return results\n"
+    }
+  ],
+  "runCount": 25,
+  "score": 800,
+  "totalWeight": 800,
+  "level1PassSnapshot": "from collections import defaultdict\nclass Seat:\n    def __init__(self):\n        self.seatdetails = defaultdict()\n        self.seatlist = []\n\n    def booking(self, query):\n        operation, *args = query\n\n        if operation == 'CREATE':\n            sno = args[0]\n            \n            if sno not in self.seatlist:\n                self.seatdetails[sno] = ()\n                self.seatlist.append(sno)\n                return \"true\"\n            \n            else:\n                return \"false\"\n\n        if operation == 'GET':\n            sno = args[0]\n\n            if sno not in self.seatlist:\n                return \"\"\n            \n            return str(self.seatlist.index(sno))\n\n        \n        if operation == 'DELETE':\n            sno = args[0]\n\n            if sno not in self.seatlist:\n                return \"false\"\n\n            self.seatlist.remove(sno)\n            self.seatdetails.pop(sno, None)\n            return \"true\"\n\n\ndef solution(queries):\n    results = []\n    seat = Seat()\n    for query in queries:\n        results.append(seat.booking(query))\n    return results\n",
+  "endedAt": 1795163472383,
+  "endedReason": "completed"
+}
